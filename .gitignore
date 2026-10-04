@@ -1,0 +1,8 @@
+# Extracted game data from the ISO (copyrighted, do not redistribute)
+/extracted/
+
+# Ghidra binary project (regenerate per RE_NOTES.md)
+/ghidra_proj/
+
+# Local analysis logs
+*.log
