@@ -44,9 +44,49 @@ Language=%i), optional `..\bin\bugs.ini`; saves `..\bin\Savegame%d.dat`,
 - `INSTALL/` - Acrobat, "Chat'N", DirectX 6.1, plus the old InstallShield 5/6 setup
 
 The exe references PSX-era paths (`..\BZE\...BZE;1` with `;1` ISO version
-suffixes, `MUSIC.XA`, `SPEECHES.XA` at volume root) that do not exist on this
-disc: the port kept the PS1 file API and points the "CD" at the installed
-`DATAS` folder, falling back file-by-file when entries are missing.
+suffixes, `MUSIC.XA`, `SPEECHES.XA` at volume root). Startup chdirs into the
+install dir so these resolve there first; anything missing is re-pointed at
+the CD drive found by the disc check below.
+
+## Disc check (why the game refuses to run without the CD)
+
+One executable does everything. BUGS.EXE (the disc copy in `DATAS/BIN/` is the
+binary analyzed here) holds the entire game, so the "real exe on the CD"
+theory is answered: the disc exe is complete, and it never launches or loads
+code from the disc. There is no CreateProcess/WinExec anywhere, and
+LoadLibraryA only ever targets `opengl32.dll` (FUN_0040e050) plus the CRT
+delay-load helper (user32.dll). The only other game binary, HV3DFX.DLL, is the
+3Dfx OpenGL ICD loaded as an OpenGL driver, not a stub.
+
+Startup (FUN_00405950):
+
+1. Single-instance check: `FindWindowA("BBLIT_Game", ...)`.
+2. Requires `HKCU\Software\Infogrames\Bugs Bunny Lost In Time` value
+   `installation_path` (name as rendered by Ghidra; real spacing not
+   recoverable from the decompile). Missing key or value: silent exit before
+   any window appears.
+3. `SetCurrentDirectoryA` into the install path (FUN_00450760 wrapper).
+4. Disc scan (FUN_00405850 plus two inline copies): walks drive letters from
+   `DAT_0045f368` up to `z`, keeps drives where `GetDriveTypeA() == 5`
+   (DRIVE_CDROM) and `GetVolumeInformationA` returns volume label `BBLIT`
+   (case-insensitive). On match the drive root (`X:\`) is stored in
+   `DAT_004b1928`.
+5. No match: retry dialog (FUN_00405640) in a loop; Retry rescans, Cancel
+   falls through to `if (!bVar2) return 0` and the game exits.
+
+File access goes through wrappers that try the path as given first, so
+relative paths land in the install dir, then fall back to
+`DAT_004b1928 + <path minus its drive part>` when the file is missing
+(FUN_004056c0 = existence check, FUN_00405760 = open). Levels, music and
+speech are read this way. This corrects an earlier note here: the CD root is
+strictly a physical DRIVE_CDROM labelled BBLIT, not the installed DATAS
+folder; the install dir only serves the first attempt of each lookup.
+
+Bypass: the check reads only drive type and volume label, so a mounted image
+of the disc with the label intact satisfies it. A truly driveless run needs
+`DAT_004b1928` forced non-zero (or the `return 0` NOPed) AND every referenced
+file present in the install dir, otherwise the wrappers hit the retry/error
+box instead.
 
 ## BZE container format (verified against all 167 files)
 
