@@ -59,7 +59,9 @@ typedef size_t SIZE_T;
 
 #define TRUE  1
 #define FALSE 0
+#ifndef NULL
 #define NULL  ((void*)0)
+#endif
 
 #define MAX_PATH 260
 #define WINAPI
@@ -427,3 +429,51 @@ struct ShimUnknown { const ShimVTableUnknown *vtable; };
 #endif
 
 #endif /* BBLIT_WINSHIM_H */
+
+/* ---- port helpers implemented in shim/port_helpers.c ---- */
+unsigned long flt_bitsf(float v);
+unsigned long flt_bitsd(double v);
+float u32_as_f(unsigned long bits);
+double u32_as_d(unsigned long bits);
+long double u32_as_ld(unsigned long bits);
+long CARRY4(unsigned long a, unsigned long b);
+unsigned long long rdtsc(void);
+unsigned char in(unsigned short port);
+void out(unsigned short port, unsigned char val);
+long double f2xm1(long double x);
+long double fpatan(long double y, long double x);
+long double fscale(long double v, long double s);
+long double fcos(long double x);
+int *cpuid_basic_info(int leaf);
+int *cpuid_Version_info(int leaf);
+int32_t vc6_ftol(double v);
+void data_wr3(void *base, long off, unsigned long v);
+unsigned long data_rd3(void *base, long off);
+void *lab_addr(const char *name);
+extern void *reg_scratch;
+
+/* VC++6 CRT support (shim/shim_crt.c); unprototyped where the original
+ * call sites vary. */
+longlong __allmul(longlong a, longlong b);
+longlong __alldiv(longlong a, longlong b);
+longlong __allrem(longlong a, longlong b);
+ulonglong __aulldiv(ulonglong a, ulonglong b);
+ulonglong __aullrem(ulonglong a, ulonglong b);
+longlong __allshl(longlong a, int shift);
+longlong __allshr(longlong a, int shift);
+ulonglong __aullshr(ulonglong a, int shift);
+char *_strstr(const char *h, const char *n);
+char *_strrchr(const char *s, int c);
+char *_strncpy(char *d, const char *s, size_t n);
+int __strcmpi(const char *a, const char *b);
+int _stricmp(const char *a, const char *b);
+void __amsg_exit();
+void __math_exit();
+void __startOneArgErrorHandling();
+long __fload_withFB();
+
+/* ---- WinAPI the CRT-adjacent code calls (stubs in shim/winapi_stubs.c) ---- */
+typedef DWORD LCID;
+BOOL GetVersionExA(LPOSVERSIONINFOA);
+int LCMapStringW(LCID lcid, DWORD flags, LPCWSTR src, int srclen, LPWSTR dst, int dstlen);
+BOOL GetStringTypeW(DWORD type, LPCWSTR src, int srclen, LPWORD chartype);
