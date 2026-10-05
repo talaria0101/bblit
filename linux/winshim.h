@@ -307,6 +307,9 @@ void Sleep(DWORD);
 LPSTR GetCommandLineA(void);
 LANGID GetSystemDefaultLangID(void);
 BOOL FreeLibrary(HMODULE);
+/* LoadLibraryA returns the full 64-bit dlopen handle: the game parks it in a
+ * dword slot but feeds it straight back into GetProcAddress, which walks it
+ * as a pointer.  A truncated handle segfaults inside ld.so. */
 HMODULE LoadLibraryA(LPCSTR);
 DWORD GetLastError(void);
 FARPROC GetProcAddress(HMODULE, LPCSTR);

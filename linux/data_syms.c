@@ -42737,7 +42737,6 @@ static const struct { unsigned from; void *to; } bblit_thunks[] = {
 };
 
 static const unsigned bblit_ptr_slots[] = {
-  0x0044fc00,
   0x0045f2a0,
   0x0045f344,
   0x00467730,
@@ -42795,6 +42794,7 @@ static const unsigned bblit_ptr_slots[] = {
   0x004b0a90,
   0x004b0a94,
   0x004b0a98,
+  0x004b0ca8,
   0x004b0dfe,
   0x004b0e50,
   0x004b10f8,
@@ -42827,7 +42827,6 @@ static const unsigned bblit_ptr_slots[] = {
   0x004b1aa0,
   0x004b1aa4,
   0x004b1ab4,
-  0x004b1ac4,
   0x004b1c4c,
   0x004b1c74,
   0x004b1c80,

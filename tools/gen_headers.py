@@ -172,6 +172,15 @@ def main():
     TYPE_OVERRIDES = {
         '005f8530': ('float', 4),       # x87 compare operand, stored via fld
         '004b0dfe': ('longdouble', 10), # FPU control/operand shadow (NAN/==)
+        # float slots the generic pass re-classified as pointer vars; every
+        # use site is a float store/compare (see bblit_game.c)
+        '004efb68': ('float', 4),
+        '004efb7c': ('float', 4),
+        '00621604': ('float', 4),
+        '006235c4': ('float', 4),
+        '006235c8': ('float', 4),
+        '006235cc': ('float', 4),
+        '004b0ca8': ('raw', 1),         # byte compared with (char) returns
     }
 
     def view_macro(a, size, kind):
@@ -380,8 +389,11 @@ def main():
     body.append('')
 
     # referenced pointer-typed slots to widen
+    # never widen inside .text: those dwords are data-shaped labels on code
+    # (jump-table heads etc), read-only and already executable
     slots = sorted((a) for a, d in info.items()
-                   if d['ptr'] or d['called'] or d['kind'] == 'ptr')
+                   if (d['ptr'] or d['called'] or d['kind'] == 'ptr')
+                   and int(a, 16) >= CODE_END)
     body.append('static const unsigned bblit_ptr_slots[] = {')
     for a in slots:
         body.append(f'  0x{a},')

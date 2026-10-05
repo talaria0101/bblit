@@ -602,10 +602,69 @@ def join_statements(lines):
 # hand fixes for sites the mechanical passes cannot type-resolve.  Each entry
 # is applied verbatim to the freshly generated text on every run.
 HAND_FIXES = [
+    # DAT_009ca724 is a 64-bit module handle (dlopen result); float sites
+    # read it as fild/qword - cast through uintptr_t
+    ("(float)DAT_009ca724", "(float)(uintptr_t)DAT_009ca724"),
+    # DAT_004b0ca8 typed raw byte array: use sites are scalar byte reads
+    ("*puVar2 = DAT_004b0ca8;", "*puVar2 = (uintptr_t)*DAT_004b0ca8;"),
+    ("*puVar4 = DAT_004b0ca8;", "*puVar4 = (uintptr_t)*DAT_004b0ca8;"),
+    ("(DAT_004b0ca8 == (char)local_18c)", "(*DAT_004b0ca8 == (char)local_18c)"),
+    ("*pcVar12 = DAT_004b0ca8;", "*pcVar12 = *DAT_004b0ca8;"),
+    ("(bVar10 == DAT_004b0ca8)", "(bVar10 == *DAT_004b0ca8)"),
+    ("(bVar10 != DAT_004b0ca8)", "(bVar10 != *DAT_004b0ca8)"),
     # FUN_00408f70: generator emitted in_ECX twice (void* artifact + size_t)
     ("  char *pcVar2;\n  size_t in_ECX;\n  uint uVar3;",
      "  char *pcVar2;\n  uint uVar3;"),
     ("  void *in_ECX;", "  size_t in_ECX;"),
+    # FUN_0040e050/FUN_0040e790: the GL import table at 0x468750 is 8-byte
+    # entries (dest u32, name u32); the decompile read it as 16-byte
+    # (ptr,ptr) pairs.  Rewrite the loop body to stride 8 via u32 reads.
+    ("""    ppuVar7 = (undefined **)(&PTR_DAT_00468750);
+    puVar6 = puVar4 + -4;
+    do {
+      *(undefined **)(puVar6 + -4) = ppuVar7[1];
+      puVar5 = puVar6 + -8;
+      *(HMODULE *)(puVar6 + -8) = (HMODULE)(uintptr_t)(DAT_009ca724);
+      *(undefined4 *)(puVar6 + -0xc) = 0x40e0ae;
+      pFVar2 = GetProcAddress(*(HMODULE *)(puVar6 + -8),*(LPCSTR *)(puVar6 + -4));
+      puVar8 = (undefined4 *)*ppuVar7;
+      ppuVar7 = ppuVar7 + 2;
+      *puVar8 = (uintptr_t)pFVar2;
+      puVar6 = puVar6 + -8;
+    } while (ppuVar7 <= (undefined **)((int)&PTR_s_wglUseFontOutlinesW_0046928c + 3));""",
+     """    {
+      const data_u32 *glent = (const data_u32 *)&PTR_DAT_00468750;
+      do {
+        data_u32 dest_slot = glent[0];
+        const char *gname = (const char *)(uintptr_t)glent[1];
+        FARPROC pfn = GetProcAddress((HMODULE)(uintptr_t)DAT_009ca724, gname);
+        *(data_u32 *)(uintptr_t)dest_slot = (data_u32)(uintptr_t)pfn;
+        glent += 2;
+      } while (glent <= (const data_u32 *)((uintptr_t)&PTR_s_wglUseFontOutlinesW_0046928c + 3));
+    }"""),
+    ("""            ppuVar17 = (undefined **)(&PTR_DAT_00468750);
+            puVar16 = puVar16 + -4;
+            do {
+              *(undefined **)(puVar16 + -4) = ppuVar17[1];
+              puVar13 = puVar16 + -8;
+              *(HMODULE *)(puVar16 + -8) = (HMODULE)(uintptr_t)(DAT_009ca724);
+              *(undefined4 *)(puVar16 + -0xc) = 0x40eb46;
+              pFVar9 = GetProcAddress(*(HMODULE *)(puVar16 + -8),*(LPCSTR *)(puVar16 + -4));
+              puVar3 = (undefined4 *)*ppuVar17;
+              ppuVar17 = ppuVar17 + 2;
+              *puVar3 = (uintptr_t)pFVar9;
+              puVar16 = puVar16 + -8;
+            } while (ppuVar17 <= (undefined **)((int)&PTR_s_wglUseFontOutlinesW_0046928c + 3));""",
+     """            {
+              const data_u32 *glent = (const data_u32 *)&PTR_DAT_00468750;
+              do {
+                data_u32 dest_slot = glent[0];
+                const char *gname = (const char *)(uintptr_t)glent[1];
+                FARPROC pfn = GetProcAddress((HMODULE)(uintptr_t)DAT_009ca724, gname);
+                *(data_u32 *)(uintptr_t)dest_slot = (data_u32)(uintptr_t)pfn;
+                glent += 2;
+              } while (glent <= (const data_u32 *)((uintptr_t)&PTR_s_wglUseFontOutlinesW_0046928c + 3));
+            }"""),
     # code address stored into a pointer slot: DAT_0044fc00 is a code macro
     ("*(undefined **)(puVar6 + -0x38) = &DAT_0044fc00;",
      "*(undefined **)(puVar6 + -0x38) = (undefined *)DAT_0044fc00;"),
