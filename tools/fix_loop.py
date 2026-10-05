@@ -210,9 +210,9 @@ def cast_for(dst_t, src_t):
         base = 'u32_as_ld' if 'longdouble' in dst_t else ('u32_as_d' if 'double' in dst_t else 'u32_as_f')
         return base + '((uintptr_t)(', '))'
     if dk == 'ptr' and sk == 'float':
-        bits = 'flt_bitsd((double)(' if 'double' in src_t else 'flt_bitsf((float)('
-        close = '))' if 'double' in src_t else '))'
-        return '(' + dst_t + ')(uintptr_t)' + bits, close + ')'
+        if 'double' in src_t:
+            return '(' + dst_t + ')(uintptr_t)flt_bitsd((double)(', '))'
+        return '(' + dst_t + ')(uintptr_t)flt_bitsf((float)(', '))'
     if dk == 'int' and sk == 'float':
         # original stored float bits into a dword slot view
         return '(int)(uintptr_t)flt_bitsf((float)(', '))'
@@ -231,11 +231,13 @@ def note_expected(d):
 
 def assign_types(d):
     """(dst_type, src_type) from an assignment-to message."""
-    m = re.search(r"assignment to '([^']+)'", d['msg'])
+    m = re.search(r"assign(?:ment|ing) to (?:type )?'([^']+)'", d['msg'])
     if not m:
         return None, None
     dst = m.group(1)
     m2 = re.search(r"from (?:type |incompatible pointer type )?'([^']+)'", d['msg'])
+    if not m2:
+        m2 = re.search(r"from type '([^']+)'", d['msg'])
     src = m2.group(1) if m2 else None
     return dst, src
 
@@ -307,7 +309,7 @@ def fix_conversions(diags, lines):
                 lines[ln-1] = new
                 changed += 1
             continue
-        if 'assignment to' in msg:
+        if 'assignment to' in msg or 'when assigning to type' in msg:
             dst, src = assign_types(d)
             # the error column sits at/near the offending '='; prefer the '='
             # nearest the column (for/while headers hold several)
@@ -512,11 +514,12 @@ def fix_binary_ops(diags, lines):
                     break
             else:
                 continue
-        types = re.findall(r"\((?:have )?'([^']+)' (?:and )?", msg)
-        # robust: types appear as (have 'A' and 'B'{aka...}); take quoted
-        # segments after 'have' and 'and'
-        m2 = re.search(r"\(\s*(?:have\s+)?'([^']+)'\s+and\s+'([^']+)'", msg)
-        types = [m2.group(1), m2.group(2)] if m2 else []
+        # types appear as (have 'A' {aka ...} and 'B' {aka ...}); the aka
+        # text between them defeats a single regex, so take the two pieces
+        # separately
+        ma = re.search(r"\(\s*have\s+'([^']+)'", msg)
+        mb = re.search(r"\s+and\s+'([^']+)'", msg)
+        types = [ma.group(1), mb.group(1)] if (ma and mb) else []
         if len(types) < 2:
             continue
         if '*' in types[0]:
