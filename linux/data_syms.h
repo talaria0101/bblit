@@ -39,11 +39,11 @@ void bblit_port_init(void);
 #define DAT_0045e024 (*(data_u32 *)0x0045e024ul) /* 0045e024 */
 #define DAT_0045e028 (*(data_u32 *)0x0045e028ul) /* 0045e028 */
 #define DAT_0045e050 (*(data_u32 *)0x0045e050ul) /* DAT_0045e050 */
-#define DAT_0045f260 (*(unsigned short *)0x0045f260ul) /* DAT_0045f260 */
-#define DAT_0045f264 (*(data_u32 *)0x0045f264ul) /* DAT_0045f264 */
+#define STR_SPRNAME_BLANK (*(unsigned short *)0x0045f260ul) /* DAT_0045f260 */
+#define STR_SPRNAME_NULL (*(data_u32 *)0x0045f264ul) /* DAT_0045f264 */
 #define DAT_0045f268 (*(unsigned char *)0x0045f268ul) /* DAT_0045f268 */
-#define DAT_0045f284 (*(unsigned char *)0x0045f284ul) /* DAT_0045f284 */
-#define DAT_0045f288 (*(data_u32 *)0x0045f288ul) /* 0045f288 */
+#define FILEMODE_WB_A (*(unsigned char *)0x0045f284ul) /* DAT_0045f284 */
+#define FILEMODE_WB (*(data_u32 *)0x0045f288ul) /* 0045f288 */
 #define _DAT_0045f2a0 (*(data_u32 **)0x0045f2a0ul) /* 0045f2a0 */
 #define DAT_0045f2a4 (*(data_u32 *)0x0045f2a4ul) /* DAT_0045f2a4 */
 #define DAT_0045f2a8 (*(data_u32 *)0x0045f2a8ul) /* DAT_0045f2a8 */
@@ -56,41 +56,41 @@ void bblit_port_init(void);
 #define DAT_0045f318 (*(data_u32 *)0x0045f318ul) /* 0045f318 */
 #define DAT_0045f330 (*(data_u32 *)0x0045f330ul) /* 0045f330 */
 #define PTR_DAT_0045f344 (*(data_u32 **)0x0045f344ul) /* PTR_DAT_0045f344 */
-#define DAT_0045f354 (*(data_u32 *)0x0045f354ul) /* DAT_0045f354 */
+#define STR_CD_DATAS_DIR (*(data_u32 *)0x0045f354ul) /* DAT_0045f354 */
 #define DAT_0045f358 (*(data_u32 *)0x0045f358ul) /* DAT_0045f358 */
 #define DAT_0045f35c (*(unsigned char *)0x0045f35cul) /* DAT_0045f35c */
-#define DAT_0045f368 (*(data_u32 *)0x0045f368ul) /* DAT_0045f368 */
+#define STR_CD_DRIVE_ROOT (*(data_u32 *)0x0045f368ul) /* DAT_0045f368 */
 #define DAT_0045f36c (*(unsigned char *)0x0045f36cul) /* DAT_0045f36c */
 #define DAT_0045f370 (*(unsigned char *)0x0045f370ul) /* DAT_0045f370 */
-#define DAT_0045f3b4 (*(data_u32 *)0x0045f3b4ul) /* 0045f3b4 */
-#define DAT_0045f3e4 (*(data_u32 *)0x0045f3e4ul) /* 0045f3e4 */
-#define DAT_0045f3e8 (*(data_u32 *)0x0045f3e8ul) /* 0045f3e8 */
+#define FILEMODE_RB (*(data_u32 *)0x0045f3b4ul) /* 0045f3b4 */
+#define FILEMODE_WPB (*(data_u32 *)0x0045f3e4ul) /* 0045f3e4 */
+#define FILEMODE_AB (*(data_u32 *)0x0045f3e8ul) /* 0045f3e8 */
 #define DAT_0045f3f0 (*(data_u32 *)0x0045f3f0ul) /* 0045f3f0 */
 #define DAT_004633f0 (*(data_u32 *)0x004633f0ul) /* 004633f0 */
 #define DAT_00467410 (*(data_u32 *)0x00467410ul) /* DAT_00467410 */
 #define DAT_00467470 (*(data_u32 *)0x00467470ul) /* DAT_00467470 */
 #define DAT_004674d0 (*(data_u32 *)0x004674d0ul) /* DAT_004674d0 */
-#define DAT_00467538 (*(data_u32 *)0x00467538ul) /* 00467538 */
-#define DAT_0046753c (*(data_u32 *)0x0046753cul) /* DAT_0046753c */
+#define STR_FLAG_QUERY (*(data_u32 *)0x00467538ul) /* 00467538 */
+#define STR_BZE_DIR (*(data_u32 *)0x0046753cul) /* DAT_0046753c */
 #define DAT_00467540 (*(data_u32 *)0x00467540ul) /* DAT_00467540 */
-#define DAT_00467554 (*(data_u32 *)0x00467554ul) /* 00467554 */
-#define DAT_0046755c (*(data_u32 *)0x0046755cul) /* 0046755c */
-#define DAT_0046762c (*(data_u32 *)0x0046762cul) /* 0046762c */
-#define DAT_00467634 (*(data_u32 *)0x00467634ul) /* 00467634 */
-#define DAT_0046763c (*(data_u32 *)0x0046763cul) /* 0046763c */
-#define DAT_00467644 (*(data_u32 *)0x00467644ul) /* 00467644 */
+#define STR_FLAG_PAL (*(data_u32 *)0x00467554ul) /* 00467554 */
+#define STR_FLAG_PAL_UC (*(data_u32 *)0x0046755cul) /* 0046755c */
+#define STR_FLAG_OGL (*(data_u32 *)0x0046762cul) /* 0046762c */
+#define STR_FLAG_OGL_UC (*(data_u32 *)0x00467634ul) /* 00467634 */
+#define STR_FLAG_WIN (*(data_u32 *)0x0046763cul) /* 0046763c */
+#define STR_FLAG_WIN_UC (*(data_u32 *)0x00467644ul) /* 00467644 */
 #define DAT_0046768c (*(data_u32 *)0x0046768cul) /* 0046768c */
 #define DAT_00467690 (*(data_u32 *)0x00467690ul) /* 00467690 */
 #define DAT_00467694 (*(data_u32 *)0x00467694ul) /* 00467694 */
 #define DAT_00467698 (*(data_u32 *)0x00467698ul) /* 00467698 */
-#define DAT_0046769c (*(data_u32 *)0x0046769cul) /* 0046769c */
-#define DAT_004676a0 (*(data_u32 *)0x004676a0ul) /* 004676a0 */
-#define DAT_004676a4 (*(data_u32 *)0x004676a4ul) /* 004676a4 */
-#define DAT_004676a8 (*(data_u32 *)0x004676a8ul) /* 004676a8 */
-#define DAT_004676ac (*(data_u32 *)0x004676acul) /* 004676ac */
-#define DAT_004676b0 (*(data_u32 *)0x004676b0ul) /* 004676b0 */
-#define DAT_004676b4 (*(data_u32 *)0x004676b4ul) /* 004676b4 */
-#define DAT_00467700 (*(data_u32 *)0x00467700ul) /* 00467700 */
+#define STR_FLAG_R (*(data_u32 *)0x0046769cul) /* 0046769c */
+#define STR_FLAG_R_UC (*(data_u32 *)0x004676a0ul) /* 004676a0 */
+#define STR_FLAG_P (*(data_u32 *)0x004676a4ul) /* 004676a4 */
+#define STR_FLAG_P_UC (*(data_u32 *)0x004676a8ul) /* 004676a8 */
+#define STR_FLAG_B (*(data_u32 *)0x004676acul) /* 004676ac */
+#define STR_FLAG_B_UC (*(data_u32 *)0x004676b0ul) /* 004676b0 */
+#define FILEMODE_WBP (*(data_u32 *)0x004676b4ul) /* 004676b4 */
+#define FILEMODE_RT (*(data_u32 *)0x00467700ul) /* 00467700 */
 #define _DAT_00467730 (*(data_u32 **)0x00467730ul) /* 00467730 */
 #define _DAT_00467734 (*(data_u32 **)0x00467734ul) /* 00467734 */
 #define _DAT_00467738 (*(data_u32 **)0x00467738ul) /* 00467738 */
@@ -132,8 +132,8 @@ void bblit_port_init(void);
 #define DAT_00469940 (*(data_u32 *)0x00469940ul) /* 00469940 */
 #define DAT_00469948 (*(data_u32 *)0x00469948ul) /* 00469948 */
 #define PTR_DAT_0046aec0 (*(data_u32 (*)[])0x0046aec0ul) /* PTR_DAT_0046aec0 */
-#define DAT_0046aed4 (*(data_u32 *)0x0046aed4ul) /* 0046aed4 */
-#define DAT_0046aedc (*(data_u32 *)0x0046aedcul) /* DAT_0046aedc */
+#define STR_EXT_BMP_UC (*(data_u32 *)0x0046aed4ul) /* 0046aed4 */
+#define STR_EXT_BMP (*(data_u32 *)0x0046aedcul) /* DAT_0046aedc */
 #define DAT_0046aef8 (*(data_u32 *)0x0046aef8ul) /* 0046aef8 */
 #define DAT_0046aefc (*(data_u32 *)0x0046aefcul) /* 0046aefc */
 #define DAT_0046af58 (*(float *)0x0046af58ul) /* DAT_0046af58 */
@@ -148,11 +148,11 @@ void bblit_port_init(void);
 #define DAT_004abf94 (*(data_u32 *)0x004abf94ul) /* DAT_004abf94 */
 #define DAT_004abf98 (*(data_u32 **)0x004abf98ul) /* DAT_004abf98 */
 #define DAT_004abf9c (*(data_u32 *)0x004abf9cul) /* DAT_004abf9c */
-#define DAT_004abfe8 (*(unsigned char *)0x004abfe8ul) /* DAT_004abfe8 */
-#define DAT_004abff0 (*(unsigned char *)0x004abff0ul) /* DAT_004abff0 */
-#define DAT_004abff8 (*(unsigned char *)0x004abff8ul) /* DAT_004abff8 */
-#define DAT_004ac000 (*(unsigned char *)0x004ac000ul) /* DAT_004ac000 */
-#define DAT_004ac008 (*(unsigned char *)0x004ac008ul) /* DAT_004ac008 */
+#define TAG_SSND (*(unsigned char *)0x004abfe8ul) /* DAT_004abfe8 */
+#define TAG_INST (*(unsigned char *)0x004abff0ul) /* DAT_004abff0 */
+#define TAG_COMM (*(unsigned char *)0x004abff8ul) /* DAT_004abff8 */
+#define TAG_MARK (*(unsigned char *)0x004ac000ul) /* DAT_004ac000 */
+#define TAG_RIFF (*(unsigned char *)0x004ac008ul) /* DAT_004ac008 */
 #define DAT_004ac010 (*(data_u32 *)0x004ac010ul) /* DAT_004ac010 */
 #define _DAT_004ac014 (*(data_u32 **)0x004ac014ul) /* 004ac014 */
 #define _DAT_004ac018 (*(data_u32 **)0x004ac018ul) /* 004ac018 */
@@ -172,10 +172,10 @@ void bblit_port_init(void);
 #define DAT_004ac03e (*(data_u32 *)0x004ac03eul) /* 004ac03e */
 #define DAT_004ac03f (*(data_u32 *)0x004ac03ful) /* 004ac03f */
 #define DAT_004ac040 (*(data_u32 *)0x004ac040ul) /* DAT_004ac040 */
-#define DAT_004ac058 (*(data_u32 *)0x004ac058ul) /* 004ac058 */
-#define DAT_004ac074 (*(data_u32 *)0x004ac074ul) /* 004ac074 */
-#define DAT_004ac084 (*(data_u32 *)0x004ac084ul) /* 004ac084 */
-#define DAT_004ac088 (*(data_u32 *)0x004ac088ul) /* 004ac088 */
+#define STR_GFX_RIVA (*(data_u32 *)0x004ac058ul) /* 004ac058 */
+#define STR_GFX_ATI (*(data_u32 *)0x004ac074ul) /* 004ac074 */
+#define STR_GFX_NEC (*(data_u32 *)0x004ac084ul) /* 004ac084 */
+#define STR_GFX_3DFX (*(data_u32 *)0x004ac088ul) /* 004ac088 */
 #define DAT_004ac090 (*(data_u32 *)0x004ac090ul) /* 004ac090 */
 #define DAT_004ac094 (*(data_u32 *)0x004ac094ul) /* DAT_004ac094 */
 #define _DAT_004ac09c (*(data_u32 **)0x004ac09cul) /* 004ac09c */
@@ -211,14 +211,14 @@ void bblit_port_init(void);
 #define DAT_004ac125 (*(data_u32 *)0x004ac125ul) /* 004ac125 */
 #define DAT_004ac128 (*(data_u32 *)0x004ac128ul) /* DAT_004ac128 */
 #define PTR_DAT_004ac12c (*(data_u32 **)0x004ac12cul) /* PTR_DAT_004ac12c */
-#define DAT_004ac130 (*(data_u32 *)0x004ac130ul) /* 004ac130 */
-#define DAT_004ac138 (*(data_u32 *)0x004ac138ul) /* 004ac138 */
-#define DAT_004ac140 (*(data_u32 *)0x004ac140ul) /* 004ac140 */
-#define DAT_004ac148 (*(data_u32 *)0x004ac148ul) /* 004ac148 */
-#define DAT_004ac150 (*(data_u32 *)0x004ac150ul) /* 004ac150 */
-#define DAT_004ac158 (*(data_u32 *)0x004ac158ul) /* 004ac158 */
-#define DAT_004ac160 (*(data_u32 *)0x004ac160ul) /* 004ac160 */
-#define DAT_004ac168 (*(data_u32 *)0x004ac168ul) /* 004ac168 */
+#define STR_FLAG_GAM (*(data_u32 *)0x004ac130ul) /* 004ac130 */
+#define STR_FLAG_GAM_UC (*(data_u32 *)0x004ac138ul) /* 004ac138 */
+#define STR_FLAG_MUL (*(data_u32 *)0x004ac140ul) /* 004ac140 */
+#define STR_FLAG_MUL_UC (*(data_u32 *)0x004ac148ul) /* 004ac148 */
+#define STR_FLAG_SAT (*(data_u32 *)0x004ac150ul) /* 004ac150 */
+#define STR_FLAG_SAT_UC (*(data_u32 *)0x004ac158ul) /* 004ac158 */
+#define STR_FLAG_LUM (*(data_u32 *)0x004ac160ul) /* 004ac160 */
+#define STR_FLAG_LUM_UC (*(data_u32 *)0x004ac168ul) /* 004ac168 */
 #define DAT_004ac180 (*(data_u32 *)0x004ac180ul) /* 004ac180 */
 #define DAT_004ac184 (*(data_u32 *)0x004ac184ul) /* 004ac184 */
 #define DAT_004ac188 (*(data_u32 *)0x004ac188ul) /* 004ac188 */
@@ -227,8 +227,8 @@ void bblit_port_init(void);
 #define DAT_004ac194 (*(data_u32 *)0x004ac194ul) /* 004ac194 */
 #define DAT_004ac198 (*(data_u32 *)0x004ac198ul) /* 004ac198 */
 #define DAT_004ac19c (*(data_u32 *)0x004ac19cul) /* 004ac19c */
-#define DAT_004ac1a0 (*(data_u32 *)0x004ac1a0ul) /* 004ac1a0 */
-#define DAT_004ac1a8 (*(data_u32 *)0x004ac1a8ul) /* 004ac1a8 */
+#define STR_FLAG_SAM (*(data_u32 *)0x004ac1a0ul) /* 004ac1a0 */
+#define STR_FLAG_SAM_UC (*(data_u32 *)0x004ac1a8ul) /* 004ac1a8 */
 #define DAT_004ac1b0 (*(data_u32 *)0x004ac1b0ul) /* 004ac1b0 */
 #define DAT_004ac1b4 (*(data_u32 *)0x004ac1b4ul) /* 004ac1b4 */
 #define DAT_004ac1dc (*(data_u32 *)0x004ac1dcul) /* 004ac1dc */
@@ -238,11 +238,11 @@ void bblit_port_init(void);
 #define PTR_s_NoVendorName_004ac30c (*(data_u32 **)0x004ac30cul) /* PTR_s_NoVendorName_004ac30c */
 #define PTR_s_CyrixInstead_004ac310 (*(data_u32 **)0x004ac310ul) /* PTR_s_CyrixInstead_004ac310 */
 #define DAT_004ac314 (*(data_u32 *)0x004ac314ul) /* DAT_004ac314 */
-#define DAT_004ac338 (*(data_u32 *)0x004ac338ul) /* 004ac338 */
-#define DAT_004ac340 (*(data_u32 *)0x004ac340ul) /* 004ac340 */
-#define DAT_004ac348 (*(data_u32 *)0x004ac348ul) /* 004ac348 */
+#define REGVAL_MHZ_LC (*(data_u32 *)0x004ac338ul) /* 004ac338 */
+#define REGVAL_MHZ_MC (*(data_u32 *)0x004ac340ul) /* 004ac340 */
+#define REGVAL_MHZ (*(data_u32 *)0x004ac348ul) /* 004ac348 */
 #define DAT_004ac428 (*(data_u32 *)0x004ac428ul) /* 004ac428 */
-#define DAT_004ac42c (*(data_u32 *)0x004ac42cul) /* 004ac42c */
+#define STR_YES (*(data_u32 *)0x004ac42cul) /* 004ac42c */
 #define DAT_004ac548 (*(data_u32 *)0x004ac548ul) /* DAT_004ac548 */
 #define PTR_LAB_004ac550 (*(data_u32 *)0x004ac550ul) /* PTR_LAB_004ac550 */
 #define PTR_FUN_004ac6e0 (*(data_u32 *)0x004ac6e0ul) /* PTR_FUN_004ac6e0 */
@@ -293,7 +293,7 @@ void bblit_port_init(void);
 #define DAT_004ae3d8 (*(data_u32 *)0x004ae3d8ul) /* 004ae3d8 */
 #define DAT_004ae4a8 (*(data_u32 *)0x004ae4a8ul) /* 004ae4a8 */
 #define DAT_004ae4d8 (*(data_u32 *)0x004ae4d8ul) /* 004ae4d8 */
-#define DAT_004ae5b4 (*(unsigned char *)0x004ae5b4ul) /* DAT_004ae5b4 */
+#define STR_SEP_SLASH (*(unsigned char *)0x004ae5b4ul) /* DAT_004ae5b4 */
 #define PTR___fpmath_004ae5fc (*(code **)0x004ae5fcul) /* PTR___fpmath_004ae5fc */
 #define DAT_004ae610 (*(data_u32 *)0x004ae610ul) /* DAT_004ae610 */
 #define _DAT_004ae620 (*(data_u32 **)0x004ae620ul) /* 004ae620 */
@@ -1445,16 +1445,16 @@ void bblit_port_init(void);
 #define DAT_009cbb00 (*(data_u32 *)0x009cbb00ul) /* DAT_009cbb00 */
 #define DAT_009cbb04 (*(data_u32 *)0x009cbb04ul) /* DAT_009cbb04 */
 #define DAT_009cbb08 (*(data_u32 **)0x009cbb08ul) /* DAT_009cbb08 */
-#define s____________keyboard_handler_erro_0045f230 (*(const char (*)[46])0x0045f230ul)
-#define s_BUTTON_i_0045f26c (*(const char (*)[9])0x0045f26cul)
-#define s_Bugs_Bunny_0045f278 (*(const char (*)[11])0x0045f278ul)
-#define s_BBLIT_Game_0045f348 (*(const char (*)[11])0x0045f348ul)
-#define s_BBLIT_0045f360 (*(const char (*)[6])0x0045f360ul)
-#define s_installation_path_0045f374 (*(const char (*)[18])0x0045f374ul)
-#define s_Software_Infogrames_Bugs_Bunny_L_0045f388 (*(const char (*)[44])0x0045f388ul)
-#define s____bin_Savegame_d_dat_0045f3b8 (*(const char (*)[22])0x0045f3b8ul)
-#define s____bin_Savedata_dat_0045f3d0 (*(const char (*)[20])0x0045f3d0ul)
-#define s_opengl32_dll_004673f0 (*(char (*)[16])0x004673f0ul)
+#define STR_KEYBOARD_ERR (*(const char (*)[46])0x0045f230ul)
+#define STR_BTNNAME_FMT (*(const char (*)[9])0x0045f26cul)
+#define STR_MSGBOX_TITLE (*(const char (*)[11])0x0045f278ul)
+#define STR_WINDOW_CLASS (*(const char (*)[11])0x0045f348ul)
+#define STR_CD_VOLUME_LABEL (*(const char (*)[6])0x0045f360ul)
+#define STR_REG_INSTALL_PATH (*(const char (*)[18])0x0045f374ul)
+#define STR_REG_GAME_KEY (*(const char (*)[44])0x0045f388ul)
+#define STR_SAVEGAME_FMT (*(const char (*)[22])0x0045f3b8ul)
+#define STR_SAVEDATA_PATH (*(const char (*)[20])0x0045f3d0ul)
+#define g_OPENGL_DLL (*(char (*)[16])0x004673f0ul)
 #define s__pal__00467544 (*(const char (*)[6])0x00467544ul)
 #define s__PAL__0046754c (*(const char (*)[6])0x0046754cul)
 #define s__dll__00467564 (*(const char (*)[6])0x00467564ul)
@@ -1485,21 +1485,21 @@ void bblit_port_init(void);
 #define s__no_skip_00467668 (*(const char (*)[9])0x00467668ul)
 #define s__NO_SYNC_00467674 (*(const char (*)[9])0x00467674ul)
 #define s__no_sync_00467680 (*(const char (*)[9])0x00467680ul)
-#define s____bin_config_pc_004676b8 (*(const char (*)[20])0x004676b8ul)
+#define STR_CONFIG_PATH (*(const char (*)[20])0x004676b8ul)
 #define s_FirstTime__i_004676cc (*(const char (*)[13])0x004676ccul)
 #define s_FirstTime_004676dc (*(const char (*)[10])0x004676dcul)
 #define s_Language__i_004676e8 (*(const char (*)[12])0x004676e8ul)
 #define s_Language_004676f4 (*(const char (*)[9])0x004676f4ul)
-#define s____bin_bugs_ini_00467704 (*(const char (*)[16])0x00467704ul)
+#define STR_BUGS_INI_PATH (*(const char (*)[16])0x00467704ul)
 #define s_FirstTime__00467714 (*(const char (*)[11])0x00467714ul)
-#define s_erreur__fenetre_principale_inval_0046ae08 (*(const char (*)[38])0x0046ae08ul)
-#define s_BBLIT_Res_window_0046ae30 (*(const char (*)[17])0x0046ae30ul)
-#define s_file___s_l___d___msg__GetDisplay_0046ae44 (*(const char (*)[43])0x0046ae44ul)
-#define s_D__Projets_Bugs_src_Pcrogl_c_0046ae70 (*(const char (*)[29])0x0046ae70ul)
+#define STR_ERR_MAIN_WINDOW (*(const char (*)[38])0x0046ae08ul)
+#define STR_RES_WINDOW_CLASS (*(const char (*)[17])0x0046ae30ul)
+#define STR_ERR_GETDISPLAYMODE (*(const char (*)[43])0x0046ae44ul)
+#define STR_SRCFILE_PCROGL (*(const char (*)[29])0x0046ae70ul)
 #define s_file___s_l___d___msg__DirectDraw_0046ae90 (*(const char (*)[45])0x0046ae90ul)
-#define s____track_Track_d_xa_004abfa0 (*(const char (*)[20])0x004abfa0ul)
-#define s____Speeches_Speech00_xa_004abfb4 (*(const char (*)[24])0x004abfb4ul)
-#define s____speeches_Speech_02d_xa_004abfcc (*(const char (*)[26])0x004abfccul)
+#define STR_TRACK_FMT (*(const char (*)[20])0x004abfa0ul)
+#define STR_SPEECH00_PATH (*(const char (*)[24])0x004abfb4ul)
+#define STR_SPEECH_FMT (*(const char (*)[26])0x004abfccul)
 #define s_Direct3D_004ac044 (*(const char (*)[9])0x004ac044ul)
 #define s_Real3D_004ac050 (*(const char (*)[7])0x004ac050ul)
 #define s_NVIDIA_004ac060 (*(const char (*)[7])0x004ac060ul)
@@ -1538,7 +1538,7 @@ void bblit_port_init(void);
 #define s_TotalVirtual_user_bytes_of_addre_004ac4c8 (*(const char (*)[46])0x004ac4c8ul)
 #define s_AvailPhys_free_physical_mem_in_b_004ac4f8 (*(const char (*)[41])0x004ac4f8ul)
 #define s_TotalPhys_physical_mem_in_byte____004ac524 (*(const char (*)[36])0x004ac524ul)
-#define s__s___s_004adaa0 (*(const char (*)[7])0x004adaa0ul)
+#define STR_ERR_FMT (*(const char (*)[7])0x004adaa0ul)
 #define s_Button_004ae5a8 (*(const char (*)[12])0x004ae5a8ul)
 #define s_____004b0cb0 (*(const char (*)[6])0x004b0cb0ul)
 

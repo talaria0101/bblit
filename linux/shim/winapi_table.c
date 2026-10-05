@@ -76,7 +76,10 @@ uint32_t GetHandleCount(void) { return 0; }
 HANDLE CreateFileA(LPCSTR name, DWORD access, DWORD share,
                               LPSECURITY_ATTRIBUTES sa, DWORD disp, DWORD flags, HANDLE tmpl)
 { (void)access; (void)share; (void)sa; (void)flags; (void)tmpl;
-  if (!name) return INVALID_HANDLE_VALUE;
+  if (!name || (uintptr_t)name < 0x10000 || (uintptr_t)name >= 0x7ffffffdfffcUL
+      || ((uintptr_t)name >> 47) != ((uintptr_t)name >> 63))
+    return INVALID_HANDLE_VALUE;
+  fprintf(stderr, "[cf] %s disp=%u\n", name, (unsigned)disp);
   const char *mode;
   switch (disp) {
   case CREATE_NEW:      mode = "wb";  break;   /* fail if exists: close enough for the game's use */
@@ -137,6 +140,13 @@ LONG RegQueryValueExA(HKEY k, LPCSTR name, LPDWORD res, LPDWORD type,
                                   LPBYTE buf, LPDWORD len)
 { (void)k; (void)res; (void)type;
   if (!buf || !len) return 1;
+  /* winmain passes the destination as an outgoing frame slot whose high half
+   * the 4-byte slot model never wrote (observed: buf = 4 GiB-short pointer
+   * faulting the memcpy).  A wild pointer is dropped, not written through:
+   * the caller keeps scanning. */
+  int ok = (uintptr_t)buf > 0x10000 && (uintptr_t)buf < 0x7ffffffdfffcUL
+           && ((uintptr_t)buf >> 47) == ((uintptr_t)buf >> 63);
+  if (!ok) return 1;
   size_t n = strlen(g_install_path) + 1;
   if (*len < n) { *len = (DWORD)n; return 234; }
   memcpy(buf, g_install_path, n); *len = (DWORD)n; return 0u; }
@@ -161,12 +171,35 @@ UINT GetDriveTypeA(LPCSTR root)
 BOOL GetVolumeInformationA(LPCSTR root, LPSTR vol, DWORD vlen,
                                        LPDWORD serial, LPDWORD maxlen, LPDWORD flags, LPSTR fs, DWORD flen)
 { (void)serial; (void)maxlen; (void)flags;
-  if (root && (root[0] & ~0x20) == (bblit_cd_drive() & ~0x20) && root[1] == ':') {
-    if (vol && vlen) { strncpy(vol, "BBLIT", vlen - 1); vol[vlen - 1] = 0; }
-    if (fs && flen) { strncpy(fs, "ISO9660", flen - 1); fs[flen - 1] = 0; }
-    return 1;
+  /* frame-slot pointer args: the caller's 4-byte frame slots widened to 8
+   * leave the high half uninitialised (observed: vol=0x7ffd00007ffd, i.e.
+   * (1<<32)|0x7ffd), so any wild value must be dropped rather than written
+   * through.  Canonical user-space only, and NOT 0x7ffffffdfffc: that is the
+   * mmap_min_addr-shaped value the uninitialised slot keeps producing. */
+  int cd = root && (root[0] & ~0x20) == (bblit_cd_drive() & ~0x20) && root[1] == ':';
+  int ok_vol = vol && (uintptr_t)vol > 0x10000 && (uintptr_t)vol < 0x7ffffffdfffcUL
+                   && ((uintptr_t)vol >> 47) == ((uintptr_t)vol >> 63);
+  int ok_fs  = fs  && (uintptr_t)fs  > 0x10000 && (uintptr_t)fs  < 0x7ffffffdfffcUL
+                   && ((uintptr_t)fs  >> 47) == ((uintptr_t)fs  >> 63);
+  fprintf(stderr, "[gvi] root=%s vol=%p vlen=%u ok_vol=%d ok_fs=%d cd=%d\n",
+          root ? root : "(nil)", (void *)vol, (unsigned)vlen, ok_vol, ok_fs, cd);
+  if (cd) {
+    if (ok_vol) { DWORD n = (vlen && vlen <= 0x200) ? vlen : 0x104;
+                  /* the game compares the volume label against its own
+                   * constant at 0x45f360 ("BBLIT", 5 chars + NUL), so mirror
+                   * that exact string instead of a guessed label (observed:
+                   * writing "BLIT" here made the CD check fail and opened
+                   * the retry dialog) */
+                  const char *lbl = (const char *)0x45f360ul;
+                  strncpy(vol, lbl, n - 1); vol[n - 1] = 0; }
+    if (ok_fs)  { DWORD n = (flen && flen <= 0x200) ? flen : 0x104;
+                  strncpy(fs, "ISO9660", n - 1); fs[n - 1] = 0; }
+  } else {
+    if (ok_vol) *vol = 0;
+    if (ok_fs)  *fs = 0;
   }
-  if (vol && vlen) *vol = 0; if (fs && flen) *fs = 0; return 0; }  /* STUB-DIVERGENCE */
+  return cd;
+}  /* STUB-DIVERGENCE: wild/uninit buffer pointers are dropped instead of faulting */
 
 /* ---- user32: windows / messages ---- */
 static const char *g_class = "BBLIT_Game";
@@ -205,7 +238,7 @@ int32_t GetSystemMetrics(int i) { return i == 0 ? 640 : i == 1 ? 480 : 0; }  /* 
 short GetKeyboardState(LPBYTE ks) { memset(ks, 0, 256); return 1; }
 
 /* ---- gdi / opengl probe support ---- */
-int ChoosePixelFormat(HDC dc, const PIXELFORMATDESCRIPTOR *pfd) { (void)dc; (void)pfd; return 1; }
+int ChoosePixelFormat(HDC dc, const PIXELFORMATDESCRIPTOR *pfd) { (void)dc; (void)pfd; fprintf(stderr, "[cpf]\n"); return 1; }
 BOOL SetPixelFormat(HDC dc, int f, const PIXELFORMATDESCRIPTOR *pp) { (void)dc; (void)f; (void)pp; return 1; }
 
 /* ---- kernel timing ---- */
@@ -244,7 +277,7 @@ HMODULE LoadLibraryA(LPCSTR name)
 }
 BOOL FreeLibrary(HMODULE m)
 {
-    /* FUN_0040e050 opens opengl32 twice (probe, then real init) and closes the
+    /* ogl_load_dll opens opengl32 twice (probe, then real init) and closes the
      * old handle between the two; glibc keeps a second dlopen of the same lib
      * alive, but never unref it: GL context state would die with it. */
     (void)m;

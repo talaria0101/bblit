@@ -717,11 +717,139 @@ HAND_FIXES = [
      "__builtin_memcpy(auStack_e,&in_ST7,10);"),
     # data_u32** slot returned through an undefined* API
     ("return &DAT_004b20f8;", "return (undefined *)&DAT_004b20f8;"),
+    # FUN_0044fca0 (VC6 sub-malloc): the decompile dropped every return value
+    # (extraout artifacts).  Real behaviour: try the sub-allocator, else
+    # HeapAlloc, and hand the block back to the caller.
+    ("""long FUN_0044fca0(int param_1) {
+  int iVar1;
+  uint dwBytes;
+  
+  dwBytes = param_1 + 0xfU & 0xfffffff0;
+  if ((dwBytes <= DAT_004b0904) && (iVar1 = (uintptr_t)(FUN_00452440(param_1 + 0xfU >> 4)), iVar1 != 0)) {
+    return 0;
+  }
+  HeapAlloc((void *)(uintptr_t)(DAT_009caae4),0,dwBytes);
+  return 0;
+}""",
+     """long FUN_0044fca0(int param_1) {
+  long p;
+  uint dwBytes;
+
+  dwBytes = param_1 + 0xfU & 0xfffffff0;
+  if (dwBytes <= DAT_004b0904) {
+    p = (long)FUN_00452440(param_1 + 0xfU >> 4);
+    if (p != 0) return p;
+  }
+  return (long)HeapAlloc((void *)(uintptr_t)(DAT_009caae4),0,dwBytes);
+}"""),
+    # FUN_0044fc30 wraps FUN_0044fc50 and must forward its block, not return 0
+    ("""long FUN_0044fc30(undefined4 param_1) {
+  FUN_0044fc50(param_1,DAT_004b1e70);
+  return 0;
+}""",
+     """long FUN_0044fc30(undefined4 param_1) {
+  return (long)FUN_0044fc50(param_1,DAT_004b1e70);
+}"""),
+    # FUN_0044fc50: same dropped-return decompile; when the sub-allocator is
+    # disabled (param_2 == 0) the original falls through to HeapAlloc
+    ("""      if (iVar1 != 0) {
+        return iVar1;
+      }
+      if (param_2 == 0) {
+        return 0;
+      }
+      iVar1 = FUN_00452080(param_1);""",
+     """      if (iVar1 != 0) {
+        return iVar1;
+      }
+      if (param_2 == 0) {
+        return (long)HeapAlloc((void *)(uintptr_t)(DAT_009caae4),0,param_1);
+      }
+      iVar1 = FUN_00452080(param_1);"""),
 ]
+
+def ptr_cast_pass(lines):
+    """(int)<pointer> truncates a 64-bit pointer.  Ghidra decompiled a 32-bit
+    PE where (int)ptr is lossless; on x86-64 it destroys the address (observed:
+    FUN_00405950 crashed storing through a 32-bit-truncated stack pointer).
+    Rewrite casts whose operand is a pointer-typed identifier, &sym, or
+    &stackXXXXXX to (long)(uintptr_t).  (int)x[...] element casts and casts of
+    known-integer variables are left alone."""
+    # per-function pointer-typed locals: declarations whose declarator has '*'
+    PTR_DECL = re.compile(r'^\s{2}[\w ]+?\*\s*\**\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[[^\]]*\])?\s*;')
+    func = None
+    ptrvars = {}
+    for l in lines:
+        m = re.match(r'// ===== (FUN_[0-9A-Fa-f]+)', l)
+        if m:
+            func = m.group(1)
+            ptrvars[func] = set()
+            continue
+        if func is None:
+            continue
+        dm = PTR_DECL.match(l)
+        if dm:
+            ptrvars[func].add(dm.group(1))
+    # one global pass over the joined text, tracking the enclosing function by
+    # marker lines so the per-function var sets apply
+    n = 0
+    out = []
+    func = None
+    CAST = re.compile(r'\(int\)\s*(&?)\s*\b([A-Za-z_][A-Za-z0-9_]*)\b(?!\s*\[)')
+    for l in lines:
+        m = re.match(r'// ===== (FUN_[0-9A-Fa-f]+)', l)
+        if m:
+            func = m.group(1)
+            out.append(l)
+            continue
+        pv = ptrvars.get(func, set())
+
+        def rep(mm):
+            nonlocal n
+            amp, name = mm.group(1), mm.group(2)
+            is_ptr = amp == '&' or name in pv or name.startswith('stack0x')
+            if not is_ptr:
+                return mm.group(0)
+            n += 1
+            return '(long)(uintptr_t)' + amp + name
+        out.append(CAST.sub(rep, l))
+    return out, n
+
+
+def lp64_ptr_arith_pass(lines):
+    """Ghidra decompiled a 32-bit PE: unsigned dword pointer offsets wrap
+    modulo 2^32, so the idiom `ptr + -uVar` means `ptr - uVar` and
+    `(uint)bVar * -2 + 1` is a +1/-1 direction stride.  Compiled at LP64 the
+    same text adds 0xffffffff as a positive 64-bit offset and the pointer
+    lands 4 GiB up (observed: winmain SIGSEGV at bblit_game.c:3581 with
+    RAX=0x10045f370, the '\' string address plus 1<<32).  Fix by computing
+    the offset in 32-bit and sign-extending: (long)(int)(...).
+    Applies to the stride idiom, ptr + -uVar, ~uVar and N - uVar subscripts."""
+    n = 0
+    STRIDE = re.compile(r'\+\s*\(uint\)(bVar\d+)\s*\*\s*-(\d+)(\s*\+\s*(\d+))?')
+    NEGOFF = re.compile(r'\b(p[A-Za-z]*Var\d+|param_\d+)\s*\+\s*-uVar(\d+)\b')
+    out = []
+    for l in lines:
+        new = STRIDE.sub(
+            lambda m: '+ (long)(int)((uint)%s * -%s%s)' % (
+                m.group(1), m.group(2), ' + ' + m.group(4) if m.group(4) else ''),
+            l)
+        new = NEGOFF.sub(lambda m: '%s + (long)(int)(-uVar%s)' % (m.group(1), m.group(2)), new)
+        new = re.sub(r'\[~uVar(\d+)\]', r'[(long)(int)(~uVar\1)]', new)
+        new = re.sub(r'\[(\d+) - uVar(\d+)\]', r'[(long)(int)(\1 - uVar\2)]', new)
+        if new != l:
+            n += 1
+        out.append(new)
+    return out, n
+
 
 def oneshot(lines):
     lines, n_join = join_statements(lines)
     n = n_join
+    lines, n_ptr = ptr_cast_pass(lines)
+    n += n_ptr
+    lines, n_lp64 = lp64_ptr_arith_pass(lines)
+    n += n_lp64
     text = '\n'.join(lines)
     nfix = 0
     for old, new in HAND_FIXES:
@@ -735,7 +863,7 @@ def oneshot(lines):
     # &stackXXXXXX in assignments/views: port needs an integer-roundtrip so the
     # void* slot lvalue accepts it (gcc14 rejects implicit conversions)
     for i, l in enumerate(lines):
-        new = re.sub(r'(?<![\w.])&stack0x[0-9a-fA-F]+\b',
+        new = re.sub(r'(?<![\w.)])&stack0x[0-9a-fA-F]+\b',
                      lambda m: '((void *)(uintptr_t)' + m.group(0) + ')', l)
         if new != l:
             lines[i] = new

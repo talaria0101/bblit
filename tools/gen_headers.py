@@ -33,6 +33,7 @@ def parse_args():
     ap.add_argument('--game', default='linux/bblit_game.c')
     ap.add_argument('--gamehdr', default='linux/bblit_game.h')
     ap.add_argument('--overrides', default='linux/data_overrides.json')
+    ap.add_argument('--renames', default='tools/renames.json')
     ap.add_argument('--out', default='linux/data_syms.h')
     ap.add_argument('--body-out', default='linux/data_syms.c')
     return ap.parse_args()
@@ -64,8 +65,24 @@ def main():
     args = parse_args()
     text = open(args.game, encoding='utf-8', errors='replace').read()
 
+    # identifier rename map (functions and data); keys are 8-hex addresses or
+    # full DAT_ identifiers, values are the new C names.  refs read from the
+    # game file carry the NEW names, so every lookup of a Ghidra-side symbol
+    # goes through rev_renames first.
+    renames = {}
+    rev_renames = {}
+    if os.path.exists(args.renames):
+        renames = json.load(open(args.renames))
+        for k, v in renames.items():
+            rev_renames[v] = k
+
     # ---- referenced data symbols ----------------------------------------
     refs = sorted(set(re.findall(r'\b(?:_DAT_[0-9A-Fa-f]{8}|DAT_[0-9A-Fa-f]{8}|PTR_[A-Za-z0-9_]+)\b', text)))
+    # renamed data symbols appear under their new names; add them so their
+    # defines are emitted (the loop below maps them back via rev_renames)
+    for k, new in renames.items():
+        if k.startswith(('DAT_', '_DAT_', 'PTR_')) and re.search(r'\b' + re.escape(new) + r'\b', text):
+            refs.append(new)
 
     by_addr = collections.defaultdict(list)
     label_addr = {}
@@ -101,7 +118,7 @@ def main():
     # ---- classify each referenced address --------------------------------
     info = {}
     for sym in refs:
-        a = addr_of(sym)
+        a = addr_of(rev_renames.get(sym, sym))
         if a is None:
             print(f'gen_headers: WARN no address for {sym}', file=sys.stderr)
             continue
@@ -326,6 +343,7 @@ def main():
         if not lbl.startswith('s_'):
             continue
         lbl_id = re.sub(r'[^A-Za-z0-9_]', '_', lbl)
+        lbl_id = renames.get(p[1], lbl_id)
         if lbl_id not in text:
             continue
         addr, size = p[1], max(int(p[2]), 1)
@@ -379,11 +397,12 @@ def main():
         addr, name = p[1], p[2]
         if not re.match(r'^FUN_[0-9A-Fa-f]{8}$', name):
             continue  # CRT/thunk chunks: no compiled body exists
-        if f'{name}(' not in hdr:
-            print(f'gen_headers: WARN trampoline target {name} missing from {args.gamehdr}',
+        newname = renames.get(addr, name)
+        if f'{newname}(' not in hdr:
+            print(f'gen_headers: WARN trampoline target {newname} missing from {args.gamehdr}',
                   file=sys.stderr)
             continue
-        body.append(f'{{ 0x{addr}, (void *)&{name} }},')
+        body.append(f'{{ 0x{addr}, (void *)&{newname} }},')
         nfn += 1
     body.append('};')
     body.append('')
