@@ -9,3 +9,4 @@
 
 # python bytecode
 __pycache__/
+linux/build/
