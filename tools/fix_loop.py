@@ -337,7 +337,7 @@ def fix_conversions(diags, lines):
                 # a comma at the RHS's own level makes it a comma expression;
                 # commas BELOW our depth (e.g. inside an outer condition or a
                 # function call argument list) do not
-                own_comma = any(c == ',' and depth[s + i] == op_level
+                own_comma = any(c == ',' and depth[s + i] == op_level + 1
                                 for i, c in enumerate(seg))
                 if not own_comma:
                     # commas live only in the outer tail; wrap the segment
@@ -496,7 +496,11 @@ def fix_binary_ops(diags, lines):
                     break
             else:
                 continue
-        types = re.findall(r"have '([^']+)'", msg)
+        types = re.findall(r"\((?:have )?'([^']+)' (?:and )?", msg)
+        # robust: types appear as (have 'A' and 'B'{aka...}); take quoted
+        # segments after 'have' and 'and'
+        m2 = re.search(r"\(\s*(?:have\s+)?'([^']+)'\s+and\s+'([^']+)'", msg)
+        types = [m2.group(1), m2.group(2)] if m2 else []
         if len(types) < 2:
             continue
         if '*' in types[0]:
@@ -564,18 +568,24 @@ def fix_misc(diags, lines):
     return changed
 
 def join_statements(lines):
-    """Merge continuation lines so every statement is one physical line:
-    while paren/bracket depth > 0 at end of line, append the next line.
-    Skips preprocessor lines.  Returns (lines, removed_count)."""
+    """Merge continuation lines so every statement is one physical line.
+    A line is continued when it does not end a statement: decompiled C
+    statements always end in one of ; { } or a case label's colon.  Any other
+    ending (an operator, comma, open paren) means the statement continues on
+    the next line.  Skips preprocessor lines.  Returns (lines, removed)."""
     out = []
     removed = 0
+    def ends_statement(t):
+        t = t.rstrip()
+        if not t:
+            return True
+        if (t.endswith((';', '{', '}', ':', '*/')) or t.startswith('#')
+                or t.startswith('//')):
+            return True
+        return False
     for l in lines:
-        if out and out[-1].startswith('#'):
-            out.append(l)
-            continue
-        cur = out[-1] if out else None
-        if cur is not None and (cur.count('(') > cur.count(')') or cur.count('[') > cur.count(']')):
-            out[-1] = cur.rstrip() + ' ' + l.strip()
+        if out and not ends_statement(out[-1]):
+            out[-1] = out[-1].rstrip() + ' ' + l.strip()
             removed += 1
         else:
             out.append(l)
@@ -585,6 +595,7 @@ def join_statements(lines):
 def oneshot(lines):
     lines, n_join = join_statements(lines)
     n = n_join
+    return lines, n
     # &stackXXXXXX in assignments/views: port needs an integer-roundtrip so the
     # void* slot lvalue accepts it (gcc14 rejects implicit conversions)
     for i, l in enumerate(lines):
@@ -639,7 +650,7 @@ def reconcile_header(lines):
 # ----------------------------------------------------------------------- main
 def main():
     lines = open(GAME).read().split('\n')
-    n = oneshot(lines)
+    lines, n = oneshot(lines)
     ndef = reconcile_header(lines)
     print(f'oneshot rewrites: {n}; header prototypes: {ndef}')
     open(GAME, 'w').write('\n'.join(lines))
