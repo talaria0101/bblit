@@ -258,16 +258,32 @@ def fix_conversions(diags, lines):
             if not got:
                 continue
             args, a_open, a_close = got
-            # macro-expanded argument: gcc reports the column of the macro
-            # use, which sits inside ONE argument -- not necessarily argument
-            # n from the message (earlier args may have been folded into
-            # earlier fixes already).
             if not (a_open <= col-1 <= a_close):
                 continue
-            n = sum(1 for (s_, e_) in args if s_ <= col-1 < e_)
-            if n == 0:
+            def is_wrapped(t):
+                t = t.strip()
+                return t.startswith('(uintptr_t)') or t.startswith('(void *)')
+            # prefer the message's argument index; fall back to the argument
+            # containing the reported column; never re-wrap an already-wrapped
+            # argument (gcc reports these errors once per call, and repeated
+            # passes would stack casts on argument 1)
+            n = int(m.group(1))
+            idx = (n - 1) if (n - 1) < len(args) else None
+            if idx is not None and is_wrapped(l[args[idx][0]:args[idx][1]]):
+                idx = None
+            if idx is None:
+                for i, (s_, e_) in enumerate(args):
+                    if s_ <= col-1 < e_ and not is_wrapped(l[s_:e_]):
+                        idx = i
+                        break
+            if idx is None:
+                for i, (s_, e_) in enumerate(args):
+                    if not is_wrapped(l[s_:e_]):
+                        idx = i
+                        break
+            if idx is None:
                 continue
-            s, e = args[n-1]
+            s, e = args[idx]
             s2 = s
             while s2 < e and l[s2] in ' \t': s2 += 1
             e2 = e
