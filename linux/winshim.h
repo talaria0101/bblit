@@ -477,3 +477,19 @@ typedef DWORD LCID;
 BOOL GetVersionExA(LPOSVERSIONINFOA);
 int LCMapStringW(LCID lcid, DWORD flags, LPCWSTR src, int srclen, LPWSTR dst, int dstlen);
 BOOL GetStringTypeW(DWORD type, LPCWSTR src, int srclen, LPWORD chartype);
+
+/* Ghidra renders tag-only struct spellings as bare tag names */
+typedef struct _SECURITY_ATTRIBUTES _SECURITY_ATTRIBUTES;
+
+/* GetLogicalDrive/GetVersion-adjacent CRT struct Ghidra kept as _cpinfo */
+typedef struct _cpinfo {
+    UINT numc;
+} _cpinfo;
+
+/* Ghidra "exref" names reference the IAT slot of the real function */
+#define GetLastError_exref ((FARPROC)GetLastError)
+
+/* Ghidra half-part views of a dword slot (CONCAT22 inputs) */
+#define DAT_009ca740_2 (*(uint16_t *)((unsigned char *)&DAT_009ca740 + 1))
+/* raw byte views Ghidra names ram0xADDR */
+#define ram0x004b31c1 (*(unsigned char *)0x004b31c1ul)

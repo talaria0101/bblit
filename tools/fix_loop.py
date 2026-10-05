@@ -430,7 +430,7 @@ def operand_span(l, op_idx, side):
             elif c in ')]':
                 if depth == 0: break
                 depth -= 1
-            elif depth == 0 and c in '+-*/%<>=&|^,;?':
+            elif depth == 0 and c in '+-*/%<>=&|^,;?!':
                 if i > start:
                     break
                 # possible unary sign: consume it and continue

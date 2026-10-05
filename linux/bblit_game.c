@@ -1649,7 +1649,7 @@ uint FUN_00403260(int param_1) {
   }
   if (param_1 == 0xfe) {
     bVar1 = 1;
-    _DAT_009ca740 = CONCAT22(DAT_009ca740_2,DAT_0045f260);
+    _DAT_009ca740 = (data_u32 *)(uintptr_t)(CONCAT22(DAT_009ca740_2) ,DAT_0045f260);
   }
   return -(uint)bVar1 & 0x9ca740;
 }
@@ -8116,7 +8116,7 @@ HWND FUN_0040e790(void) {
           *(char **)(puVar16 + -4) = s_opengl32_dll_004673f0;
           *(undefined4 *)(puVar16 + -8) = 0x40eb1a;
           DAT_009ca724 = (uintptr_t)(LoadLibraryA(*(LPCSTR *)(puVar16 + -4)));
-          pcVar18 = GetLastError_exref;
+          pcVar18 = (long int (**)())(GetLastError_exref);
           if (DAT_009ca724 == (HMODULE)0x0) {
             *(undefined4 *)(puVar16 + -8) = 0x40eb2b;
             DVar8 = GetLastError();
@@ -8136,7 +8136,7 @@ HWND FUN_0040e790(void) {
               puVar16 = puVar16 + -8;
             } while (ppuVar17 <= (undefined **)((int)&PTR_s_wglUseFontOutlinesW_0046928c + 3));
             DVar8 = 0;
-            pcVar18 = GetLastError_exref;
+            pcVar18 = (long int (**)())(GetLastError_exref);
           }
           puVar16 = puVar13;
           if (DVar8 == 0) {
@@ -21702,7 +21702,7 @@ void FUN_004318f0(int param_1,int param_2) {
     FUN_00407da0(*(undefined4 *)(psVar3 + 0x76),psVar5);
     FUN_00408120(psVar5,psVar3,(void *)(uintptr_t)(psVar3 + 0x28));
     DAT_004b38c0 = DAT_004b38c0 + ((DAT_004b38cc - (uintptr_t)(DAT_004b38c0)) + *(int *)(psVar3 + 0x28) >> 1);
-    DAT_004b38c4 = DAT_004b38c4 + ((DAT_004b38d0 - *(int *)(psVar3 + 0x2a)) - (uintptr_t)((uintptr_t)((uintptr_t)(DAT_004b38c4))) >> 1);
+    DAT_004b38c4 = DAT_004b38c4 + ((DAT_004b38d0 - *(int *)(psVar3 + 0x2a)) - (uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)(DAT_004b38c4)))))) >> 1);
     DAT_004b38c8 = DAT_004b38c8 + ((*(int *)(psVar3 + 0x2c) - (uintptr_t)(DAT_004b38c8)) + DAT_004b38d4 >> 1);
     FUN_004312c0();
     _DAT_004b3748 = _DAT_004b3748 | 2;
@@ -21749,9 +21749,9 @@ void FUN_004318f0(int param_1,int param_2) {
       DAT_004b398c = (*(int *)(psVar3 + 0x10) * *(int *)(psVar3 + 0x76) >> 0xc) + DAT_004b38d4;
     }
     if ((DAT_004b3940 & 0x400) != 0) {
-      DAT_004b38c0 = DAT_004b38c0 - (DAT_004b38c0 - (uintptr_t)((uintptr_t)((uintptr_t)(DAT_004b3984))) >> 2);
+      DAT_004b38c0 = DAT_004b38c0 - (DAT_004b38c0 - (uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)(DAT_004b3984)))))) >> 2);
       DAT_004b38c4 = DAT_004b38c4 - (DAT_004b38c4 - DAT_004b3988 >> 2);
-      DAT_004b38c8 = DAT_004b38c8 - (DAT_004b38c8 - (uintptr_t)((uintptr_t)((uintptr_t)(DAT_004b398c))) >> 2);
+      DAT_004b38c8 = DAT_004b38c8 - (DAT_004b38c8 - (uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)((uintptr_t)(DAT_004b398c)))))) >> 2);
     }
     if ((DAT_004b3940 & 0x4000) != 0) {
       DAT_004b3968 = DAT_004b38d0;
