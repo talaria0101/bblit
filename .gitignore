@@ -6,3 +6,6 @@
 
 # Local analysis logs
 *.log
+
+# python bytecode
+__pycache__/
