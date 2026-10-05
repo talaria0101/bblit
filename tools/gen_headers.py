@@ -167,10 +167,19 @@ def main():
     out.append('')
     out.append('/* ---- data symbol views (all at original addresses) ---- */')
 
+    # addresses whose decompiled use proves a float/longdouble view; the
+    # generic inference below misreads them as pointer slots
+    TYPE_OVERRIDES = {
+        '005f8530': ('float', 4),       # x87 compare operand, stored via fld
+        '004b0dfe': ('longdouble', 10), # FPU control/operand shadow (NAN/==)
+    }
+
     def view_macro(a, size, kind):
         addr = f'0x{a}ul'
         if kind == 'ptr':
             return f'(*(void **){addr})'
+        if kind == 'longdouble':
+            return f'(*(longdouble *){addr})'
         if kind == 'float':
             return f'(*(double *){addr})' if size == 8 else f'(*(float *){addr})'
         if kind == 'raw':
@@ -254,7 +263,10 @@ def main():
         ptrvar = (deref or nullcmp or cast_ptr or to_ptrvar or rhs_ptr) and not (
             scalar and not (deref or bare))
 
-        if d['called']:
+        if a in TYPE_OVERRIDES:
+            k2, z2 = TYPE_OVERRIDES[a]
+            v = view_macro(a, z2, k2)
+        elif d['called']:
             # (*SYM)(...) call sites: the symbol holds function pointers
             v = f'(*(code **)0x{a}ul)'
         elif float_hint and not (nullcmp or cast_ptr or to_ptrvar or rhs_ptr):
@@ -292,6 +304,9 @@ def main():
             out.append(f'#define {sym} {v} /* {d["label"] or a} */')
         n += 1
 
+    # string buffers the game rewrites at runtime (seeded defaults, not literals)
+    MUTABLE_STRINGS = {'004673f0'}
+
     # ---- string labels ----------------------------------------------------
     nstr = 0
     for line in open(args.symbols):
@@ -305,7 +320,8 @@ def main():
         if lbl_id not in text:
             continue
         addr, size = p[1], max(int(p[2]), 1)
-        out.append(f'#define {lbl_id} (*(const char (*)[{size}])0x{addr}ul)')
+        const = '' if addr in MUTABLE_STRINGS else 'const '
+        out.append(f'#define {lbl_id} (*({const}char (*)[{size}])0x{addr}ul)')
         nstr += 1
 
     with open(args.out, 'w') as f:

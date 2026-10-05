@@ -468,8 +468,8 @@ char *_strncpy(char *d, const char *s, size_t n);
 int __strcmpi(const char *a, const char *b);
 int _stricmp(const char *a, const char *b);
 void __amsg_exit();
-void __math_exit();
-void __startOneArgErrorHandling();
+long double __math_exit(void);
+long double __startOneArgErrorHandling(void);
 long __fload_withFB();
 
 /* ---- WinAPI the CRT-adjacent code calls (stubs in shim/winapi_stubs.c) ---- */

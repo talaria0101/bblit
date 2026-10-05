@@ -23,3 +23,9 @@ BOOL GetStringTypeW(DWORD type, LPCWSTR src, int srclen, LPWORD chartype) {
     for (int i = 0; i < srclen; i++) chartype[i] = 0;
     return 1;
 }
+
+/* VC6 CRT x87 error paths (FUN_00456557 / FUN_00456589 in BUGS.EXE).  Their
+ * decompiled bodies are dropped as CRT by the generator; these stubs keep the
+ * link.  Only reached on x87 stack-overflow/inexact error paths. */
+long double __math_exit(void) { return 0; }
+long double __startOneArgErrorHandling(void) { return 0; }

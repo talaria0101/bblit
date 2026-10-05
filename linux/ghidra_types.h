@@ -24,7 +24,8 @@ typedef uint32_t undefined5;
 typedef unsigned int int3;      /* Ghidra 3-byte scalar; modeled 32-bit here */
 typedef unsigned int uint3;
 typedef unsigned long long unkuint10;   /* Ghidra edge sizes seen in signatures */
-typedef uint64_t unkbyte10;
+/* x87 registers are 80-bit (10 bytes); a 64-bit view truncates fstpt stores */
+typedef struct { uint64_t lo; uint16_t hi; } __attribute__((packed)) unkbyte10;
 typedef uint8_t  unkbyte1;
 typedef uint16_t unkbyte2;
 typedef uint32_t unkbyte4;

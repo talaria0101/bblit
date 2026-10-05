@@ -483,7 +483,7 @@ undefined5 FUN_004562be(void);
 void FUN_00456468(void);
 longdouble FUN_00456476(void);
 longdouble FUN_00456540(void);
-unkbyte10 FUN_004565a0(void);
+longlong FUN_004565a0(void);
 long FUN_004565b5(void);
 undefined4 FUN_004565cc(void);
 uint FUN_00456628(undefined4 param_1,uint param_2);

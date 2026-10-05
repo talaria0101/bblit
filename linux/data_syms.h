@@ -17,7 +17,7 @@ extern data_u64 bblit_image_blob[BBLIT_BLOB_WORDS];
 void bblit_port_init(void);
 
 /* ---- data symbol views (all at original addresses) ---- */
-#define DAT_0044fc00 ((code)0x0044fc00ul) /* 0044fc00 */
+#define DAT_0044fc00 (*(data_u32 **)0x0044fc00ul) /* 0044fc00 */
 #define DAT_0045c000 (*(data_u32 *)0x0045c000ul) /* DAT_0045c000 */
 #define DAT_0045c080 (*(data_u32 *)0x0045c080ul) /* 0045c080 */
 #define DAT_0045c0c0 (*(data_u32 *)0x0045c0c0ul) /* DAT_0045c0c0 */
@@ -131,7 +131,7 @@ void bblit_port_init(void);
 #define DAT_00469938 (*(data_u32 *)0x00469938ul) /* 00469938 */
 #define DAT_00469940 (*(data_u32 *)0x00469940ul) /* 00469940 */
 #define DAT_00469948 (*(data_u32 *)0x00469948ul) /* 00469948 */
-#define PTR_DAT_0046aec0 (*(data_u32 **)0x0046aec0ul) /* PTR_DAT_0046aec0 */
+#define PTR_DAT_0046aec0 (*(data_u32 (*)[])0x0046aec0ul) /* PTR_DAT_0046aec0 */
 #define DAT_0046aed4 (*(data_u32 *)0x0046aed4ul) /* 0046aed4 */
 #define DAT_0046aedc (*(data_u32 *)0x0046aedcul) /* DAT_0046aedc */
 #define DAT_0046aef8 (*(data_u32 *)0x0046aef8ul) /* 0046aef8 */
@@ -318,7 +318,7 @@ void bblit_port_init(void);
 #define PTR_DAT_004b0a98 (*(data_u32 (*)[])0x004b0a98ul) /* PTR_DAT_004b0a98 */
 #define DAT_004b0aa2 (*(data_u32 *)0x004b0aa2ul) /* 004b0aa2 */
 #define DAT_004b0ca4 (*(data_u32 *)0x004b0ca4ul) /* DAT_004b0ca4 */
-#define DAT_004b0ca8 (*(data_u32 **)0x004b0ca8ul) /* DAT_004b0ca8 */
+#define DAT_004b0ca8 (*(unsigned char *)0x004b0ca8ul) /* DAT_004b0ca8 */
 #define DAT_004b0cb8 (*(data_u32 *)0x004b0cb8ul) /* 004b0cb8 */
 #define DAT_004b0cc0 (*(data_u32 *)0x004b0cc0ul) /* DAT_004b0cc0 */
 #define DAT_004b0cc4 (*(data_u32 *)0x004b0cc4ul) /* DAT_004b0cc4 */
@@ -329,7 +329,7 @@ void bblit_port_init(void);
 #define DAT_004b0ce0 (*(data_u32 *)0x004b0ce0ul) /* DAT_004b0ce0 */
 #define DAT_004b0ce4 (*(data_u32 *)0x004b0ce4ul) /* DAT_004b0ce4 */
 #define DAT_004b0ce8 (*(data_u32 *)0x004b0ce8ul) /* DAT_004b0ce8 */
-#define _DAT_004b0dfe (*(data_u32 **)0x004b0dfeul) /* 004b0dfe */
+#define _DAT_004b0dfe (*(longdouble *)0x004b0dfeul) /* 004b0dfe */
 #define _DAT_004b0e50 (*(data_u32 **)0x004b0e50ul) /* 004b0e50 */
 #define DAT_004b0f08 (*(data_u32 *)0x004b0f08ul) /* DAT_004b0f08 */
 #define DAT_004b0f10 (*(data_u32 *)0x004b0f10ul) /* DAT_004b0f10 */
@@ -408,7 +408,7 @@ void bblit_port_init(void);
 #define DAT_004b1c24 (*(data_u32 *)0x004b1c24ul) /* DAT_004b1c24 */
 #define DAT_004b1c48 (*(data_u32 *)0x004b1c48ul) /* DAT_004b1c48 */
 #define _DAT_004b1c4c (*(data_u32 **)0x004b1c4cul) /* 004b1c4c */
-#define DAT_004b1c60 (*(data_u32 *)0x004b1c60ul) /* DAT_004b1c60 */
+#define DAT_004b1c60 (*(data_u32 **)0x004b1c60ul) /* DAT_004b1c60 */
 #define DAT_004b1c68 (*(data_u32 *)0x004b1c68ul) /* DAT_004b1c68 */
 #define DAT_004b1c6c (*(data_u32 *)0x004b1c6cul) /* DAT_004b1c6c */
 #define DAT_004b1c70 (*(unsigned char *)0x004b1c70ul) /* DAT_004b1c70 */
@@ -979,12 +979,12 @@ void bblit_port_init(void);
 #define DAT_004efb5c (*(float *)0x004efb5cul) /* DAT_004efb5c */
 #define _DAT_004efb60 (*(float *)0x004efb60ul) /* 004efb60 */
 #define _DAT_004efb64 (*(float *)0x004efb64ul) /* 004efb64 */
-#define _DAT_004efb68 (*(data_u32 **)0x004efb68ul) /* 004efb68 */
+#define _DAT_004efb68 (*(float *)0x004efb68ul) /* 004efb68 */
 #define _DAT_004efb6c (*(float *)0x004efb6cul) /* 004efb6c */
 #define _DAT_004efb70 (*(float *)0x004efb70ul) /* 004efb70 */
 #define _DAT_004efb74 (*(data_u32 **)0x004efb74ul) /* 004efb74 */
 #define DAT_004efb78 (*(unsigned char *)0x004efb78ul) /* DAT_004efb78 */
-#define _DAT_004efb7c (*(data_u32 **)0x004efb7cul) /* 004efb7c */
+#define _DAT_004efb7c (*(float *)0x004efb7cul) /* 004efb7c */
 #define _DAT_004efb80 (*(float *)0x004efb80ul) /* 004efb80 */
 #define _DAT_004efb84 (*(data_u32 **)0x004efb84ul) /* 004efb84 */
 #define _DAT_004efb88 (*(data_u32 **)0x004efb88ul) /* 004efb88 */
@@ -1085,7 +1085,7 @@ void bblit_port_init(void);
 #define DAT_005a7cc2 (*(data_u32 *)0x005a7cc2ul) /* DAT_005a7cc2 */
 #define DAT_005a80c0 (*(data_u32 *)0x005a80c0ul) /* DAT_005a80c0 */
 #define DAT_005f84e4 (*(data_u32 **)0x005f84e4ul) /* DAT_005f84e4 */
-#define _DAT_005f8530 (*(data_u32 **)0x005f8530ul) /* 005f8530 */
+#define _DAT_005f8530 (*(float *)0x005f8530ul) /* 005f8530 */
 #define DAT_00604140 (*(data_u32 *)0x00604140ul) /* 00604140 */
 #define DAT_00604144 (*(data_u32 **)0x00604144ul) /* 00604144 */
 #define _DAT_00604144 (*(data_u32 **)0x00604144ul) /* 00604144 */
@@ -1095,7 +1095,7 @@ void bblit_port_init(void);
 #define DAT_00604154 (*(data_u32 **)0x00604154ul) /* DAT_00604154 */
 #define DAT_00604160 (*(data_u32 *)0x00604160ul) /* DAT_00604160 */
 #define _DAT_00621600 (*(float *)0x00621600ul) /* 00621600 */
-#define _DAT_00621604 (*(data_u32 **)0x00621604ul) /* 00621604 */
+#define _DAT_00621604 (*(float *)0x00621604ul) /* 00621604 */
 #define DAT_00621608 (*(data_u32 **)0x00621608ul) /* DAT_00621608 */
 #define DAT_00621610 (*(data_u32 **)0x00621610ul) /* DAT_00621610 */
 #define DAT_00621614 (*(data_u32 **)0x00621614ul) /* DAT_00621614 */
@@ -1122,9 +1122,9 @@ void bblit_port_init(void);
 #define _DAT_006235b8 (*(float *)0x006235b8ul) /* 006235b8 */
 #define _DAT_006235bc (*(data_u32 **)0x006235bcul) /* 006235bc */
 #define DAT_006235c0 (*(float *)0x006235c0ul) /* DAT_006235c0 */
-#define DAT_006235c4 (*(data_u32 **)0x006235c4ul) /* DAT_006235c4 */
-#define DAT_006235c8 (*(data_u32 **)0x006235c8ul) /* DAT_006235c8 */
-#define DAT_006235cc (*(data_u32 **)0x006235ccul) /* DAT_006235cc */
+#define DAT_006235c4 (*(float *)0x006235c4ul) /* DAT_006235c4 */
+#define DAT_006235c8 (*(float *)0x006235c8ul) /* DAT_006235c8 */
+#define DAT_006235cc (*(float *)0x006235ccul) /* DAT_006235cc */
 #define DAT_006235d0 (*(data_u32 **)0x006235d0ul) /* DAT_006235d0 */
 #define DAT_006235d4 (*(data_u32 **)0x006235d4ul) /* DAT_006235d4 */
 #define DAT_006235d8 (*(data_u32 **)0x006235d8ul) /* DAT_006235d8 */
@@ -1454,7 +1454,7 @@ void bblit_port_init(void);
 #define s_Software_Infogrames_Bugs_Bunny_L_0045f388 (*(const char (*)[44])0x0045f388ul)
 #define s____bin_Savegame_d_dat_0045f3b8 (*(const char (*)[22])0x0045f3b8ul)
 #define s____bin_Savedata_dat_0045f3d0 (*(const char (*)[20])0x0045f3d0ul)
-#define s_opengl32_dll_004673f0 (*(const char (*)[16])0x004673f0ul)
+#define s_opengl32_dll_004673f0 (*(char (*)[16])0x004673f0ul)
 #define s__pal__00467544 (*(const char (*)[6])0x00467544ul)
 #define s__PAL__0046754c (*(const char (*)[6])0x0046754cul)
 #define s__dll__00467564 (*(const char (*)[6])0x00467564ul)

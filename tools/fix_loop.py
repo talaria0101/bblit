@@ -128,7 +128,7 @@ def call_args_span(l, name, near):
     # depth_scan records the count AFTER each char, so an argument separator
     # sits at the same value recorded at the call's own '('; hardcoding 1
     # collapsed nested calls into one argument and wrapped whole arglists
-    lvl = depth[a]
+    lvl = depth[a - 1]  # depth at the call's own '('
     args, cur = [], a
     i = a
     while i < b:
@@ -599,10 +599,80 @@ def join_statements(lines):
     return out, removed
 
 # ------------------------------------------------------- one-shot rewrites
+# hand fixes for sites the mechanical passes cannot type-resolve.  Each entry
+# is applied verbatim to the freshly generated text on every run.
+HAND_FIXES = [
+    # FUN_00408f70: generator emitted in_ECX twice (void* artifact + size_t)
+    ("  char *pcVar2;\n  size_t in_ECX;\n  uint uVar3;",
+     "  char *pcVar2;\n  uint uVar3;"),
+    ("  void *in_ECX;", "  size_t in_ECX;"),
+    # code address stored into a pointer slot: DAT_0044fc00 is a code macro
+    ("*(undefined **)(puVar6 + -0x38) = &DAT_0044fc00;",
+     "*(undefined **)(puVar6 + -0x38) = (undefined *)DAT_0044fc00;"),
+    # local_c holds float bits (stored via flt_bitsf above these sites)
+    ("(float)local_c - -0.5", "u32_as_f((uintptr_t)local_c) - -0.5"),
+    # viewport scales: Ghidra value-cast of the slot dword (fild)
+    ("(float)DAT_00621610", "(float)(uintptr_t)DAT_00621610"),
+    ("(float)DAT_00621618", "(float)(uintptr_t)DAT_00621618"),
+    # slot holds a table pointer; byte-scaled decrement before fild
+    ("(float)(DAT_00565fe8 + -1)", "(float)((uintptr_t)DAT_00565fe8 + -1)"),
+    # FARPROC stored into dword slot
+    ("*puVar8 = pFVar2;", "*puVar8 = (uintptr_t)pFVar2;"),
+    ("*puVar3 = pFVar9;", "*puVar3 = (uintptr_t)pFVar9;"),
+    # Ghidra `*local_28._4_4_`: deref of the pointer stored at local_28+4
+    ("*DATAPART(local_28,4,4)", "*(uint *)(uintptr_t)DATAPART(local_28,4,4)"),
+    # FUN_004259e0 takes a float arg; caller pushes the address dword
+    ("FUN_004259e0(&DAT_004b4000);", "FUN_004259e0(u32_as_f((uintptr_t)&DAT_004b4000));"),
+    # dword viewport math on pointer-typed slot lvalues (FUN_004318f0)
+    ("DAT_004b38c4 = DAT_004b38c4 + ((DAT_004b38d0 - *(int *)(psVar3 + 0x2a)) - DAT_004b38c4 >> 1);",
+     "DAT_004b38c4 = (data_u32 *)(uintptr_t)(DAT_004b38c4 + ((uintptr_t)DAT_004b38d0 - (uintptr_t)*(int *)(psVar3 + 0x2a) - DAT_004b38c4 >> 1));"),
+    ("DAT_004b38c0 = DAT_004b38c0 - (DAT_004b38c0 - DAT_004b3984 >> 2);",
+     "DAT_004b38c0 = (data_u32 *)(uintptr_t)((uintptr_t)DAT_004b38c0 - ((uintptr_t)DAT_004b38c0 - (uintptr_t)DAT_004b3984 >> 2));"),
+    ("DAT_004b38c8 = DAT_004b38c8 - (DAT_004b38c8 - DAT_004b398c >> 2);",
+     "DAT_004b38c8 = (data_u32 *)(uintptr_t)((uintptr_t)DAT_004b38c8 - ((uintptr_t)DAT_004b38c8 - (uintptr_t)DAT_004b398c >> 2));"),
+    # FUN_00434b00-ish table walk: base pointer + byte-scaled index
+    ("return DAT_004b3b70 + iVar2 * 0x58;",
+     "return (int)((uintptr_t)DAT_004b3b70 + iVar2 * 0x58);"),
+    # FUN_004565a0: 2^round(ST0) as an 8-byte int (fistp quadword); the
+    # caller's uVar2 is dword but only the low dword is ever read
+    ("Var2 = (int)(uintptr_t)flt_bitsf((float)(fscale((longdouble)1 + lVar1,ROUND(in_ST0))));",
+     "Var2 = (longlong)fscale((longdouble)1 + lVar1,ROUND(in_ST0));"),
+    ("        uVar2 = FUN_004565a0();",
+     "        uVar2 = (undefined4)(uintptr_t)FUN_004565a0();"),
+    # FUN_004565a0 returns a fistp quadword, not the 10-byte ST slot view
+    ("unkbyte10 FUN_004565a0(void) {", "longlong FUN_004565a0(void) {"),
+    ("  unkbyte10 Var2;\n  \n  lVar1 = (longdouble)f2xm1",
+     "  longlong Var2;\n  \n  lVar1 = (longdouble)f2xm1"),
+    # VC6 64-bit RT helpers: Ghidra models the 64/32 mixed calls with 4
+    # args; the port helpers take (longlong, longlong)
+    ("__alldiv(uVar8,0xac44,0)", "__alldiv((longlong)uVar8,(longlong)0xac44)"),
+    # Ghidra used these hidden locals without declaring them
+    ("void FUN_00424f40(double param_1,double param_2,double param_3) {",
+     "void FUN_00424f40(double param_1,double param_2,double param_3) {\n  double _local_8;"),
+    ("undefined4 FUN_0044a9a0(int param_1,ushort param_2,undefined4 param_3) {",
+     "undefined4 FUN_0044a9a0(int param_1,ushort param_2,undefined4 param_3) {\n  uint _param_2;"),
+    ("undefined4 FUN_00451332(int param_1,uint param_2,int param_3,uint param_4) {",
+     "undefined4 FUN_00451332(int param_1,uint param_2,int param_3,uint param_4) {\n  undefined4 _local_4;"),
+    # fstpt of ST(7) into a 10-byte frame slot (FUN_00451332)
+    ("auStack_e = (undefined1  [10])in_ST7;",
+     "__builtin_memcpy(auStack_e,&in_ST7,10);"),
+    # data_u32** slot returned through an undefined* API
+    ("return &DAT_004b20f8;", "return (undefined *)&DAT_004b20f8;"),
+]
+
 def oneshot(lines):
     lines, n_join = join_statements(lines)
     n = n_join
-    return lines, n
+    text = '\n'.join(lines)
+    nfix = 0
+    for old, new in HAND_FIXES:
+        if new in text:
+            continue  # already applied on a previous in-place run
+        if old in text:
+            nfix += text.count(old)
+            text = text.replace(old, new)
+    lines = text.split('\n')
+    n += nfix
     # &stackXXXXXX in assignments/views: port needs an integer-roundtrip so the
     # void* slot lvalue accepts it (gcc14 rejects implicit conversions)
     for i, l in enumerate(lines):
@@ -618,7 +688,7 @@ def oneshot(lines):
         if new != l:
             lines[i] = new
             n += 1
-    return n
+    return lines, n
 
 # ------------------------------------------------------ header reconciliation
 # Generic: any column-0 line shaped `<type stuff> <name>(` opens a definition.
