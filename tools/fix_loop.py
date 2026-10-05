@@ -125,10 +125,14 @@ def call_args_span(l, name, near):
         return None
     name_start, a, b = best
     depth = depth_scan(l)
+    # depth_scan records the count AFTER each char, so an argument separator
+    # sits at the same value recorded at the call's own '('; hardcoding 1
+    # collapsed nested calls into one argument and wrapped whole arglists
+    lvl = depth[a]
     args, cur = [], a
     i = a
     while i < b:
-        if depth[i] == 1 and l[i] == ',':
+        if depth[i] == lvl and l[i] == ',':
             args.append((cur, i))
             cur = i + 1
         i += 1
@@ -322,17 +326,30 @@ def fix_conversions(diags, lines):
             best = min(cands, key=lambda i: abs(i - (col-1)))
             j = best + 1
             while j < len(l) and l[j] in ' \t': j += 1
-            k = len(l)
-            while k > j and l[k-1] in ' \t;': k -= 1
-            # RHS ends at the operator's own nesting level: a for/while header
-            # holds several statements, so ';' at the header depth ends it
-            level = depth[best]
+            # The RHS ends at the first ',' / ';' at the '=' 's own paren
+            # depth, or at a ')' that closes a paren opened BEFORE the RHS
+            # (the enclosing if-header).  A ')' that closes something opened
+            # inside the RHS -- a cast, a call -- is part of the expression:
+            # `x = (T)(y);` must not stop after `(T)`.
             q = j
-            while q < k and not (l[q] == ';' and depth[q] <= level):
+            c = 0
+            while q < len(l):
+                ch = l[q]
+                if ch == '(':
+                    c += 1
+                elif ch == ')':
+                    if c == 0:
+                        break
+                    c -= 1
+                elif c == 0 and ch in ',;':
+                    break
                 q += 1
-            k2 = q
-            while k2 > j and l[k2-1] in ' \t': k2 -= 1
-            j, k = j, k2
+            if q >= len(l):
+                k = len(l)
+                while k > j and l[k-1] in ' \t;': k -= 1
+            else:
+                k = q
+            while k > j and l[k-1] in ' \t': k -= 1
             s, e = j, k
             if k <= j: continue
             if dst and src:
@@ -341,36 +358,7 @@ def fix_conversions(diags, lines):
                 pair = ('(uintptr_t)(', ')') if 'makes integer from pointer' in msg \
                     else ('(void *)(uintptr_t)(', ')')
             if not pair: continue
-            if ',' in l[s:e]:
-                # comma expression: bind it before casting.  The '=' RHS runs
-                # to end of line, which inside a condition includes closing
-                # brackets that belong to OUTER expressions: cut at the comma
-                # expression's own depth, not the raw line end.
-                depth = depth_scan(l)
-                op_level = depth[best]
-                cut = e
-                while cut > s and depth[cut-1] < op_level and l[cut-1] in ')]':
-                    cut -= 1
-                seg = l[s:cut]
-                # a comma at the RHS's own level makes it a comma expression;
-                # commas BELOW our depth (e.g. inside an outer condition or a
-                # function call argument list) do not
-                own_comma = any(c == ',' and depth[s + i] == op_level + 1
-                                for i, c in enumerate(seg))
-                if not own_comma:
-                    # commas live only in the outer tail; wrap the segment
-                    new = l[:s] + pair[0] + '(' + seg + ')' + pair[1] + l[e:]
-                else:
-                    # cast only the comma expression's FIRST element; the
-                    # rest of the expression keeps working on the cast value
-                    tail = l[cut:e]
-                    rel = seg.find(',')
-                    first = seg[:rel].rstrip()
-                    rest = seg[rel:]           # ', rest...'
-                    new = (l[:s] + pair[0] + first + pair[1]
-                           + ' ' + rest.strip() + tail + l[e:])
-            else:
-                new = wrap_span(l, s, e, pair[0], pair[1])
+            new = wrap_span(l, s, e, pair[0], pair[1])
             if new != l:
                 lines[ln-1] = new
                 changed += 1
