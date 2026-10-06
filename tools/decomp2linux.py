@@ -434,10 +434,16 @@ def main():
         if not (wrap_arity or wrap_void):
             continue
         out_parts.append(full[pos:start])
-        # variadic function-pointer cast: tolerates any arity, and the cast sits
-        # on the function rather than the result, so void-returning callees are
-        # fine even where Ghidra's output uses their (garbage) return value.
-        out_parts.append('((long (*)(...))' + full[start:m.end()-1] + ')(' + full[m.end():end] + ')')
+        # unprototyped function-pointer cast: tolerates any arity, and the cast
+        # sits on the function rather than the result, so void-returning callees
+        # are fine even where Ghidra's output uses their (garbage) return value.
+        #
+        # The parameter list is spelled `()` rather than `(...)`: ISO C requires
+        # a named parameter before `...`, so gcc accepts the bare `...` only as
+        # an extension while clang rejects it outright.  For a mismatched callee
+        # both spellings emit the same call sequence (checked by diffing the -O1
+        # asm of each form), so `()` is the portable spelling.
+        out_parts.append('((long (*)())' + full[start:m.end()-1] + ')(' + full[m.end():end] + ')')
         pos = end + 1
     out_parts.append(full[pos:])
     full = ''.join(out_parts)

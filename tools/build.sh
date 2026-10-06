@@ -13,20 +13,26 @@
 # -no-pie base 0x400000 the mmap overwrites the port's own code pages and the
 # process dies at the cmp right after mmap (observed: SIGSEGV RIP=si_addr=0x44b8a9
 # inside bblit_port_init, RAX=0x400000 RDX=3).
+#
+# CC selects the compiler (default gcc).  Both gcc and clang build this tree:
+# `CC=clang tools/build.sh` is a supported configuration, not an experiment.
+CC=${CC:-gcc}
 LDFLAGS="-no-pie -Wl,-Ttext-segment=0x48000000"
 set -e
 cd "$(dirname "$0")/.."
 O=linux/build
 mkdir -p "$O"
+# Refuse a gcc-only source construct before spending a minute on the build.
+sh tools/check_portable_casts.sh
 CFLAGS="-O1 -g -fno-strict-aliasing -w -Ilinux"
-gcc $CFLAGS -c linux/bblit_game.c        -o "$O/bblit_game.o"
-gcc $CFLAGS -c linux/data_syms.c         -o "$O/data_syms.o"
-gcc $CFLAGS -c linux/port_main.c         -o "$O/port_main.o"
-gcc $CFLAGS -c linux/shim/winapi_table.c -o "$O/winapi_table.o"
-gcc $CFLAGS -c linux/shim/winapi_stubs.c -o "$O/winapi_stubs.o"
-gcc $CFLAGS -c linux/shim/shim_crt.c     -o "$O/shim_crt.o"
-gcc $CFLAGS -c linux/shim/port_helpers.c -o "$O/port_helpers.o"
-gcc $LDFLAGS "$O"/bblit_game.o "$O"/data_syms.o "$O"/port_main.o \
+$CC $CFLAGS -c linux/bblit_game.c        -o "$O/bblit_game.o"
+$CC $CFLAGS -c linux/data_syms.c         -o "$O/data_syms.o"
+$CC $CFLAGS -c linux/port_main.c         -o "$O/port_main.o"
+$CC $CFLAGS -c linux/shim/winapi_table.c -o "$O/winapi_table.o"
+$CC $CFLAGS -c linux/shim/winapi_stubs.c -o "$O/winapi_stubs.o"
+$CC $CFLAGS -c linux/shim/shim_crt.c     -o "$O/shim_crt.o"
+$CC $CFLAGS -c linux/shim/port_helpers.c -o "$O/port_helpers.o"
+$CC $LDFLAGS "$O"/bblit_game.o "$O"/data_syms.o "$O"/port_main.o \
     "$O"/winapi_table.o "$O"/winapi_stubs.o "$O"/shim_crt.o "$O"/port_helpers.o \
     -o "$O/bblit" -lm
-echo "built $O/bblit"
+echo "built $O/bblit with $CC"

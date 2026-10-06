@@ -871,6 +871,11 @@ def oneshot(lines):
     for i, l in enumerate(lines):
         new = re.sub(r'\bthunk_(FUN_[0-9A-Fa-f]{8})\s*\(', r'\1(', l)
         new = re.sub(r'(\w+)\.DATAPART\((\w+)\s*,', r'DATAPART(\1.\2,', new)
+        # Normalize the bare-`...` function-pointer cast to the unprototyped
+        # `()` spelling (see the note at the emit site in decomp2linux.py).  This
+        # rewrites files generated before the generator emitted `()`, so a rerun
+        # of the pipeline lands on the portable form either way.
+        new = re.sub(r'(\(\*\))\s*\(\s*\.\.\.\s*\)', r'\1()', new)
         new = new.replace('(*)...', '(*)()')
         if new != l:
             lines[i] = new
