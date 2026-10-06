@@ -1,0 +1,318 @@
+// ===== FUN_00411b10 @ 00411b10 =====
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+int FUN_00411b10(uint param_1,int param_2,int param_3)
+
+{
+  int iVar1;
+  undefined4 *puVar2;
+  uint uVar3;
+  ushort *puVar4;
+  int iVar5;
+  ushort *puVar6;
+  
+  if ((uint)*(ushort *)(param_3 + 0xe) != (int)(short)DAT_004b1ab0) {
+    DAT_004b1ab0 = *(ushort *)(param_3 + 0xe);
+    FUN_0040cc80((uint)*(ushort *)(param_3 + 0xe) << 2);
+  }
+  DAT_006ac244 = (float)_DAT_004e5e74;
+  DAT_006ac248 = (float)_DAT_004e5e78;
+  DAT_006ac24c = (float)_DAT_004e5e7c;
+  _DAT_005f8530 = DAT_004efb48;
+  _DAT_00621604 = DAT_004efb38;
+  DAT_006ac220 = (float)(int)DAT_004e5e60 * 0.00024414;
+  DAT_006ac224 = (float)(int)DAT_004e5e62 * 0.00024414;
+  DAT_006ac228 = (float)(int)DAT_004e5e64 * 0.00024414;
+  DAT_006ac22c = (float)(int)DAT_004e5e66 * 0.00024414;
+  DAT_006ac230 = (float)(int)DAT_004e5e68 * 0.00024414;
+  DAT_006ac234 = (float)(int)DAT_004e5e6a * 0.00024414;
+  DAT_006ac238 = (float)(int)DAT_004e5e6c * 0.00024414;
+  DAT_006ac23c = (float)(int)DAT_004e5e6e * 0.00024414;
+  DAT_00621614 = (DAT_004efb4c & 0xffff) >> 1;
+  DAT_00621610 = -DAT_00621614;
+  iVar5 = 0;
+  _DAT_00621600 = (float)((int)*(short *)(param_3 + 6) << 2);
+  DAT_006ac240 = (float)(int)DAT_004e5e70 * 0.00024414;
+  DAT_0062161c = DAT_004efb4c >> 0x11;
+  DAT_00621618 = -DAT_0062161c;
+  iVar1 = *(int *)(param_1 + 0x14);
+  if (iVar1 != 0) {
+    param_3 = *(int *)(iVar1 + 0x14);
+    puVar6 = *(ushort **)(iVar1 + 0x10);
+    if (param_3 != 0) {
+      do {
+        switch(*(undefined1 *)((int)puVar6 + 3)) {
+        case 0x34:
+          _DAT_00604144 = &DAT_0060414c;
+          param_3 = param_3 - (uint)*puVar6;
+          DAT_00621608 = &DAT_00604140;
+          DAT_00604154 = &DAT_00604140;
+          param_1 = (uint)*puVar6;
+          iVar1 = 1;
+          if (*puVar6 != 0) {
+            puVar2 = &DAT_00604160;
+            iVar1 = param_1 + 1;
+            puVar4 = puVar6;
+            do {
+              puVar2[-5] = puVar4;
+              puVar4 = puVar4 + 0xc;
+              puVar2[-4] = puVar2 + -2;
+              *puVar2 = puVar2 + -5;
+              puVar2 = puVar2 + 3;
+              param_1 = param_1 - 1;
+            } while (param_1 != 0);
+          }
+          _DAT_00604148 = 0;
+          iVar1 = iVar1 * 0xc;
+          *(undefined4 *)(&DAT_00604140 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604144 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604148 + iVar1) = 0;
+          FUN_00416e00(&DAT_004692b8);
+          FUN_0040fdc0(&DAT_004692b8);
+          iVar1 = (*DAT_004b1a78)(iVar5 + param_2,&DAT_004692b8,&DAT_00469510,&DAT_00469698,
+                                  &DAT_00469920,1);
+          iVar5 = iVar5 + iVar1;
+          puVar6 = puVar6 + (uint)*puVar6 * 0xc;
+          break;
+        default:
+          return 0;
+        case 0x38:
+          DAT_00621608 = &DAT_00604140;
+          param_3 = param_3 - (uint)*puVar6;
+          _DAT_00604144 = &DAT_0060414c;
+          DAT_00604154 = &DAT_00604140;
+          param_1 = (uint)*puVar6;
+          iVar1 = 1;
+          if (*puVar6 != 0) {
+            puVar2 = &DAT_00604160;
+            iVar1 = param_1 + 1;
+            puVar4 = puVar6;
+            do {
+              puVar2[-5] = puVar4;
+              puVar4 = puVar4 + 0xe;
+              puVar2[-4] = puVar2 + -2;
+              *puVar2 = puVar2 + -5;
+              puVar2 = puVar2 + 3;
+              param_1 = param_1 - 1;
+            } while (param_1 != 0);
+          }
+          _DAT_00604148 = 0;
+          iVar1 = iVar1 * 0xc;
+          *(undefined4 *)(&DAT_00604140 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604144 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604148 + iVar1) = 0;
+          FUN_00416b80(&DAT_00469330);
+          FUN_0040fdc0(&DAT_00469330);
+          iVar1 = (*DAT_004b1a74)(iVar5 + param_2,&DAT_00469330,&DAT_00469560,&DAT_00469800,
+                                  &DAT_00469938,1);
+          iVar5 = iVar5 + iVar1;
+          puVar6 = puVar6 + (uint)*puVar6 * 0xe;
+          break;
+        case 0x3c:
+          _DAT_00604144 = &DAT_0060414c;
+          param_3 = param_3 - (uint)*puVar6;
+          DAT_00621608 = &DAT_00604140;
+          DAT_00604154 = &DAT_00604140;
+          param_1 = (uint)*puVar6;
+          iVar1 = 1;
+          if (*puVar6 != 0) {
+            iVar1 = param_1 + 1;
+            puVar2 = &DAT_00604160;
+            puVar4 = puVar6;
+            do {
+              puVar2[-5] = puVar4;
+              puVar2[-4] = puVar2 + -2;
+              *puVar2 = puVar2 + -5;
+              puVar4 = puVar4 + 0x10;
+              param_1 = param_1 - 1;
+              puVar2 = puVar2 + 3;
+            } while (param_1 != 0);
+          }
+          _DAT_00604148 = 0;
+          iVar1 = iVar1 * 0xc;
+          *(undefined4 *)(&DAT_00604140 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604144 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604148 + iVar1) = 0;
+          FUN_00416e00(&DAT_004692e8);
+          FUN_0040fdc0(&DAT_004692e8);
+          iVar1 = (*DAT_004b1a78)(iVar5 + param_2,&DAT_004692e8,&DAT_00469538,&DAT_00469728,
+                                  &DAT_00469928,1);
+          iVar5 = iVar5 + iVar1;
+          puVar6 = puVar6 + (uint)*puVar6 * 0x10;
+          break;
+        case 0x40:
+          DAT_00621608 = &DAT_00604140;
+          param_3 = param_3 - (uint)*puVar6;
+          _DAT_00604144 = &DAT_0060414c;
+          DAT_00604154 = &DAT_00604140;
+          param_1 = (uint)*puVar6;
+          iVar1 = 1;
+          if (*puVar6 != 0) {
+            puVar2 = &DAT_00604160;
+            iVar1 = param_1 + 1;
+            puVar4 = puVar6;
+            do {
+              puVar2[-5] = puVar4;
+              puVar4 = puVar4 + 0x14;
+              puVar2[-4] = puVar2 + -2;
+              *puVar2 = puVar2 + -5;
+              puVar2 = puVar2 + 3;
+              param_1 = param_1 - 1;
+            } while (param_1 != 0);
+          }
+          _DAT_00604148 = 0;
+          iVar1 = iVar1 * 0xc;
+          *(undefined4 *)(&DAT_00604140 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604144 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604148 + iVar1) = 0;
+          FUN_00416b80(&DAT_00469360);
+          FUN_0040fdc0(&DAT_00469360);
+          iVar1 = (*DAT_004b1a74)(iVar5 + param_2,&DAT_00469360,&DAT_00469588,&DAT_00469890,
+                                  &DAT_00469940,1);
+          iVar5 = iVar5 + iVar1;
+          puVar6 = puVar6 + (uint)*puVar6 * 0x14;
+          break;
+        case 0x48:
+          DAT_00621608 = &DAT_00604140;
+          param_3 = param_3 - (uint)*puVar6;
+          _DAT_00604144 = &DAT_0060414c;
+          DAT_00604154 = &DAT_00604140;
+          param_1 = (uint)*puVar6;
+          iVar1 = 1;
+          if (*puVar6 != 0) {
+            iVar1 = param_1 + 1;
+            puVar2 = &DAT_00604160;
+            puVar4 = puVar6;
+            do {
+              puVar2[-5] = puVar4;
+              puVar2[-4] = puVar2 + -2;
+              *puVar2 = puVar2 + -5;
+              puVar4 = puVar4 + 0xc;
+              param_1 = param_1 - 1;
+              puVar2 = puVar2 + 3;
+            } while (param_1 != 0);
+          }
+          _DAT_00604148 = 0;
+          iVar1 = iVar1 * 0xc;
+          *(undefined4 *)(&DAT_00604140 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604144 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604148 + iVar1) = 0;
+          FUN_00416e00(&DAT_004692d0);
+          FUN_0040fdc0(&DAT_004692d0);
+          iVar1 = (*DAT_004b1a78)(iVar5 + param_2,&DAT_004692d0,&DAT_004b1af0,&DAT_004696e0,
+                                  &DAT_004b1c08,0);
+          iVar5 = iVar5 + iVar1;
+          puVar6 = puVar6 + (uint)*puVar6 * 0xc;
+          break;
+        case 0x4a:
+          DAT_00621608 = &DAT_00604140;
+          _DAT_00604144 = &DAT_0060414c;
+          DAT_00604154 = &DAT_00604140;
+          param_1 = (uint)*puVar6;
+          iVar1 = 1;
+          param_3 = param_3 - (uint)*puVar6;
+          if (*puVar6 != 0) {
+            iVar1 = param_1 + 1;
+            puVar2 = &DAT_00604160;
+            puVar4 = puVar6;
+            do {
+              puVar2[-5] = puVar4;
+              puVar2[-4] = puVar2 + -2;
+              *puVar2 = puVar2 + -5;
+              puVar4 = puVar4 + 0xe;
+              param_1 = param_1 - 1;
+              puVar2 = puVar2 + 3;
+            } while (param_1 != 0);
+          }
+          _DAT_00604148 = 0;
+          iVar1 = iVar1 * 0xc;
+          *(undefined4 *)(&DAT_00604140 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604144 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604148 + iVar1) = 0;
+          FUN_00416e00(&DAT_00469300);
+          FUN_0040fdc0(&DAT_00469300);
+          iVar1 = (*DAT_004b1a78)(iVar5 + param_2,&DAT_00469300,0,&DAT_00469770,&DAT_00469930,1);
+          iVar5 = iVar5 + iVar1;
+          puVar6 = puVar6 + (uint)*puVar6 * 0xe;
+          break;
+        case 0x4c:
+          DAT_00621608 = &DAT_00604140;
+          _DAT_00604144 = &DAT_0060414c;
+          DAT_00604154 = &DAT_00604140;
+          param_1 = (uint)*puVar6;
+          iVar1 = 1;
+          param_3 = param_3 - (uint)*puVar6;
+          if (*puVar6 != 0) {
+            iVar1 = param_1 + 1;
+            puVar2 = &DAT_00604160;
+            puVar4 = puVar6;
+            do {
+              puVar2[-5] = puVar4;
+              puVar2[-4] = puVar2 + -2;
+              *puVar2 = puVar2 + -5;
+              puVar4 = puVar4 + 0xe;
+              param_1 = param_1 - 1;
+              puVar2 = puVar2 + 3;
+            } while (param_1 != 0);
+          }
+          _DAT_00604148 = 0;
+          iVar1 = iVar1 * 0xc;
+          *(undefined4 *)(&DAT_00604140 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604144 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604148 + iVar1) = 0;
+          FUN_00416b80(&DAT_00469348);
+          FUN_0040fdc0(&DAT_00469348);
+          iVar1 = (*DAT_004b1a74)(iVar5 + param_2,&DAT_00469348,&DAT_004b1b40,&DAT_00469848,
+                                  &DAT_004b1c08,0);
+          iVar5 = iVar5 + iVar1;
+          puVar6 = puVar6 + (uint)*puVar6 * 0xe;
+          break;
+        case 0x4e:
+          _DAT_00604144 = &DAT_0060414c;
+          param_3 = param_3 - (uint)*puVar6;
+          DAT_00621608 = &DAT_00604140;
+          DAT_00604154 = &DAT_00604140;
+          param_1 = (uint)*puVar6;
+          iVar1 = 1;
+          if (*puVar6 != 0) {
+            iVar1 = param_1 + 1;
+            puVar2 = &DAT_00604160;
+            puVar4 = puVar6;
+            do {
+              puVar2[-5] = puVar4;
+              puVar2[-4] = puVar2 + -2;
+              *puVar2 = puVar2 + -5;
+              puVar4 = puVar4 + 0x10;
+              param_1 = param_1 - 1;
+              puVar2 = puVar2 + 3;
+            } while (param_1 != 0);
+          }
+          _DAT_00604148 = 0;
+          iVar1 = iVar1 * 0xc;
+          *(undefined4 *)(&DAT_00604140 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604144 + iVar1) = 0;
+          *(undefined4 *)(&DAT_00604148 + iVar1) = 0;
+          FUN_00416b80(&DAT_00469378);
+          FUN_0040fdc0(&DAT_00469378);
+          iVar1 = (*DAT_004b1a74)(iVar5 + param_2,&DAT_00469378,0,&DAT_004698d8,&DAT_00469948,1);
+          iVar5 = iVar5 + iVar1;
+          puVar6 = puVar6 + (uint)*puVar6 * 0x10;
+          break;
+        case 100:
+          uVar3 = (uint)*puVar6;
+          if (uVar3 != 0) {
+            puVar6 = puVar6 + uVar3 * 8;
+            do {
+              param_3 = param_3 + -1;
+              uVar3 = uVar3 - 1;
+            } while (uVar3 != 0);
+          }
+        }
+      } while (param_3 != 0);
+      return iVar5 + param_2;
+    }
+  }
+  return param_2;
+}
+

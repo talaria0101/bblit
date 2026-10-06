@@ -1,0 +1,75 @@
+// ===== FUN_0040a530 @ 0040a530 =====
+
+undefined4 FUN_0040a530(int param_1)
+
+{
+  undefined4 *puVar1;
+  int iVar2;
+  undefined4 *puVar3;
+  int *piVar4;
+  int *piVar5;
+  int *piVar6;
+  byte bVar7;
+  int local_f8;
+  int local_f4;
+  int local_f0;
+  int local_e8 [5];
+  int local_d4;
+  int local_d0;
+  int local_cc;
+  undefined4 local_c8 [50];
+  
+  bVar7 = 0;
+  for (; param_1 != 0; param_1 = *(int *)(param_1 + 0x10)) {
+    for (puVar1 = *(undefined4 **)(param_1 + 0x78); puVar1 != (undefined4 *)0x0;
+        puVar1 = (undefined4 *)*puVar1) {
+      if (((*(ushort *)(puVar1 + 2) & 0x8000) == 0) && ((*(ushort *)(puVar1 + 2) & 0x40) != 0)) {
+        DAT_004b3940._1_1_ = DAT_004b3940._1_1_ | 1;
+        local_f8 = 0;
+        local_f4 = 0;
+        local_f0 = 1000;
+        puVar3 = local_c8;
+        piVar5 = (int *)puVar1[4];
+        for (piVar6 = piVar5; (piVar6 != (int *)0x0 && (*piVar6 != DAT_007c6248));
+            piVar6 = (int *)piVar6[0x12]) {
+          *puVar3 = piVar6;
+          puVar3 = puVar3 + 1;
+        }
+        piVar6 = (int *)puVar3[-1];
+        while ((piVar6 != (int *)0x0 && (local_c8 <= puVar3 + -1))) {
+          *piVar6 = DAT_007c6248;
+          if (piVar6[0x12] == 0) {
+            piVar4 = piVar6 + 1;
+            piVar6 = piVar6 + 9;
+            for (iVar2 = 8; iVar2 != 0; iVar2 = iVar2 + -1) {
+              *piVar6 = *piVar4;
+              piVar4 = piVar4 + (uint)bVar7 * -2 + 1;
+              piVar6 = piVar6 + (uint)bVar7 * -2 + 1;
+            }
+          }
+          else {
+            FUN_00408690(piVar6[0x12] + 0x24,piVar6 + 1,piVar6 + 9);
+          }
+          piVar6 = (int *)puVar3[-2];
+          puVar3 = puVar3 + -1;
+        }
+        piVar5 = piVar5 + 9;
+        piVar6 = local_e8;
+        for (iVar2 = 8; iVar2 != 0; iVar2 = iVar2 + -1) {
+          *piVar6 = *piVar5;
+          piVar5 = piVar5 + (uint)bVar7 * -2 + 1;
+          piVar6 = piVar6 + (uint)bVar7 * -2 + 1;
+        }
+        DAT_004b38c0 = local_d4;
+        DAT_004b38c4 = local_d0;
+        DAT_004b38c8 = local_cc;
+        FUN_00408260(local_e8,&local_f8,&local_f8);
+        DAT_004b38cc = local_f8 + DAT_004b38c0;
+        DAT_004b38d0 = local_f4 + DAT_004b38c4;
+        DAT_004b38d4 = local_f0 + DAT_004b38c8;
+      }
+    }
+  }
+  return 1;
+}
+

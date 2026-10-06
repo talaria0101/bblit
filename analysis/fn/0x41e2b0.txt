@@ -1,0 +1,158 @@
+// ===== FUN_0041e2b0 @ 0041e2b0 =====
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void FUN_0041e2b0(void)
+
+{
+  int iVar1;
+  uint uVar2;
+  int *piVar3;
+  int iVar4;
+  uint unaff_EBX;
+  int iVar5;
+  int iVar6;
+  bool bVar7;
+  undefined8 uVar8;
+  longlong lVar9;
+  LARGE_INTEGER LStack_8;
+  
+  if ((DAT_004b1c74 == 0) || (DAT_009ca854 < 0x32)) {
+    if (DAT_004b2277 == '\0') {
+      return;
+    }
+    if (DAT_004b2277 == '\x02') {
+      DAT_004abf9c = 0;
+      QueryPerformanceCounter((LARGE_INTEGER *)&DAT_004b1c68);
+      if (DAT_004b322e < 2) {
+        DAT_004b1c60 = 0;
+        DAT_004b2277 = 4;
+        return;
+      }
+      uVar8 = __allmul(*(undefined4 *)
+                        (&DAT_0045c338 +
+                        ((uint)*(byte *)(DAT_0052fd00 + 0x10050) * 0x40 + (uint)DAT_004b322e) * 4),0
+                       ,1000,0);
+      DAT_004b1c60 = __alldiv(uVar8,0xac44,0);
+      DAT_004b2277 = 4;
+      return;
+    }
+    if (DAT_004b2277 == '\b') {
+      DAT_004b2277 = 2;
+      return;
+    }
+    if (DAT_004b2277 != '\x04') {
+      return;
+    }
+    QueryPerformanceCounter(&LStack_8);
+    LStack_8.s.LowPart = (LStack_8.s.LowPart - DAT_004b1c6c) - (uint)(unaff_EBX < DAT_004b1c68);
+    lVar9 = __ftol((double)((float)CONCAT44(LStack_8.s.LowPart,unaff_EBX - DAT_004b1c68) *
+                           _DAT_007c95c0));
+    if (lVar9 < 0) {
+      return;
+    }
+    if ((lVar9 < 0x100000000) && ((uint)lVar9 < DAT_004b1c60)) {
+      return;
+    }
+  }
+  else {
+    if (DAT_004b2277 == '\0') {
+      FUN_00401490(&DAT_005532a0);
+      FUN_0041d630(DAT_004abf94);
+      return;
+    }
+    if (DAT_004b2277 == '\x01') {
+      return;
+    }
+    if (DAT_004b2277 == '\x02') {
+      uVar2 = (uint)DAT_004b322e;
+      FUN_00401490(&DAT_005532a0);
+      if (DAT_004abf98 == -1) {
+        bVar7 = false;
+      }
+      else {
+        iVar6 = uVar2 - 2;
+        iVar5 = 0;
+        if (0 < iVar6) {
+          piVar3 = (int *)(&DAT_0045c340 + (uint)*(byte *)(DAT_0052fd00 + 0x10050) * 0x100);
+          iVar4 = iVar6;
+          do {
+            iVar1 = *piVar3;
+            piVar3 = piVar3 + 1;
+            iVar5 = iVar5 + iVar1;
+            iVar4 = iVar4 + -1;
+          } while (iVar4 != 0);
+        }
+        iVar4 = FUN_0044fdc0(DAT_004abf98,iVar5,0);
+        if (iVar4 == iVar5) {
+          iVar5 = FUN_004013c0(&DAT_005532a0,
+                               *(undefined4 *)
+                                (&DAT_0045c340 +
+                                ((uint)*(byte *)(DAT_0052fd00 + 0x10050) * 0x40 + iVar6) * 4),
+                               DAT_004abf98,0);
+          bVar7 = iVar5 == 0;
+        }
+        else {
+          bVar7 = false;
+        }
+      }
+      if (!bVar7) {
+        DAT_004abf9c = 0;
+        QueryPerformanceCounter((LARGE_INTEGER *)&DAT_004b1c68);
+        if (DAT_004b322e < 2) {
+          DAT_004b1c60 = 0;
+          DAT_004b2277 = 4;
+          return;
+        }
+        uVar8 = __allmul(*(undefined4 *)
+                          (&DAT_0045c338 +
+                          ((uint)*(byte *)(DAT_0052fd00 + 0x10050) * 0x40 + (uint)DAT_004b322e) * 4)
+                         ,0,1000,0);
+        DAT_004b1c60 = __alldiv(uVar8,0xac44,0);
+        DAT_004b2277 = 4;
+        return;
+      }
+      FUN_004018d0(&DAT_005532a0);
+      DAT_004b2277 = 4;
+      return;
+    }
+    if (DAT_004b2277 == '\b') {
+      if (DAT_0055338c == 0) {
+        DAT_004b2277 = 2;
+        return;
+      }
+      FUN_00401910(&DAT_00553320);
+      DAT_004b2277 = 2;
+      return;
+    }
+    if (DAT_004b2277 != '\x04') {
+      return;
+    }
+    if (DAT_004abf9c != 0) {
+      FUN_004014f0(&DAT_005532a0,0xffffffff,0xffffffff);
+      iVar5 = FUN_00401930(&DAT_005532a0);
+      if (iVar5 == 0) {
+        return;
+      }
+      DAT_004b2277 = 0;
+      return;
+    }
+    QueryPerformanceCounter(&LStack_8);
+    LStack_8.s.LowPart = (LStack_8.s.LowPart - DAT_004b1c6c) - (uint)(unaff_EBX < DAT_004b1c68);
+    lVar9 = __ftol((double)((float)CONCAT44(LStack_8.s.LowPart,unaff_EBX - DAT_004b1c68) *
+                           _DAT_007c95c0));
+    if (lVar9 < 0) {
+      return;
+    }
+    if (lVar9 < 0x100000000) {
+      if ((uint)lVar9 < DAT_004b1c60) {
+        return;
+      }
+      DAT_004b2277 = 0;
+      return;
+    }
+  }
+  DAT_004b2277 = 0;
+  return;
+}
+

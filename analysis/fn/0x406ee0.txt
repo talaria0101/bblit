@@ -1,0 +1,146 @@
+// ===== FUN_00406ee0 @ 00406ee0 =====
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+
+void FUN_00406ee0(void)
+
+{
+  uint uVar1;
+  uint uVar2;
+  int iVar3;
+  int iVar4;
+  undefined1 *puVar5;
+  undefined1 *puVar6;
+  undefined1 *puVar7;
+  undefined1 *puVar9;
+  bool bVar10;
+  undefined4 auStackY_24 [2];
+  undefined1 *puVar8;
+  
+  puVar7 = &stack0xffffffe4;
+  QueryPerformanceCounter((LARGE_INTEGER *)&DAT_007c95d8);
+  bVar10 = CARRY4(DAT_007c95e8,DAT_007c95c8);
+  uVar1 = DAT_007c95e8 + DAT_007c95c8;
+  DAT_007c95e8 = uVar1;
+  iVar3 = DAT_007c95ec + DAT_007c95cc + (uint)bVar10;
+  uVar2 = uVar1 - DAT_007c95d8;
+  DAT_007c95ec = iVar3;
+  iVar4 = (iVar3 - DAT_007c95dc) - (uint)(uVar1 < DAT_007c95d8);
+  if (DAT_004b2277 == '\0') {
+    if (DAT_004b1924 < 2) {
+      if (((iVar4 <= DAT_007c95f4) && ((iVar4 < DAT_007c95f4 || (uVar2 < DAT_007c95f0)))) &&
+         (DAT_004b1900 == 0)) goto LAB_00407070;
+      DAT_004b1d00 = 0;
+      DAT_004b1924 = 0;
+      if (((DAT_007c95bc <= iVar4) && ((DAT_007c95bc < iVar4 || (DAT_007c95b8 < uVar2)))) &&
+         ((DAT_0045f2a4 != 0 &&
+          ((DAT_007c95dc <= iVar3 &&
+           ((puVar7 = &stack0xffffffe4, DAT_007c95dc < iVar3 ||
+            (puVar7 = &stack0xffffffe4, DAT_007c95d8 < uVar1)))))))) {
+        while( true ) {
+          do {
+            puVar8 = puVar7 + -4;
+            *(uint **)(puVar7 + -4) = &DAT_007c95d8;
+            *(undefined4 *)(puVar7 + -8) = 0x4070dc;
+            QueryPerformanceCounter(*(LARGE_INTEGER **)(puVar7 + -4));
+            puVar7 = puVar7 + -4;
+          } while (DAT_007c95dc < iVar3);
+          if (iVar3 < DAT_007c95dc) break;
+          puVar7 = puVar8;
+          if (uVar1 <= DAT_007c95d8) {
+            return;
+          }
+        }
+      }
+    }
+    else {
+      DAT_004b1d00 = 0;
+      DAT_004b1924 = 0;
+      if ((iVar4 <= DAT_007c95d4) && ((iVar4 < DAT_007c95d4 || (uVar2 < DAT_007c95d0)))) {
+        DAT_007c95e8 = DAT_007c95d8;
+        DAT_007c95ec = DAT_007c95dc;
+        _DAT_004b18f0 = 0;
+        _DAT_004b18f4 = 0;
+        DAT_004b18f8 = 0;
+        return;
+      }
+      if (((DAT_007c95bc <= iVar4) &&
+          (((DAT_007c95bc < iVar4 || (DAT_007c95b8 < uVar2)) && (DAT_0045f2a4 != 0)))) &&
+         (DAT_007c95dc <= iVar3)) {
+        puVar9 = &stack0xffffffe4;
+        if (DAT_007c95dc < iVar3) goto LAB_0040716a;
+        do {
+          puVar9 = puVar7;
+          if (uVar1 <= DAT_007c95d8) {
+            return;
+          }
+LAB_0040716a:
+          do {
+            puVar7 = puVar9 + -4;
+            *(uint **)(puVar9 + -4) = &DAT_007c95d8;
+            *(undefined4 *)(puVar9 + -8) = 0x407171;
+            QueryPerformanceCounter(*(LARGE_INTEGER **)(puVar9 + -4));
+            puVar9 = puVar9 + -4;
+          } while (DAT_007c95dc < iVar3);
+        } while (DAT_007c95dc <= iVar3);
+      }
+    }
+  }
+  else if (DAT_004b1924 < 4) {
+    if (((iVar4 <= DAT_007c95f4) && ((iVar4 < DAT_007c95f4 || (uVar2 < DAT_007c95f0)))) &&
+       (DAT_004b1900 == 0)) {
+LAB_00407070:
+      DAT_004b1d00 = 1;
+      DAT_004b1924 = DAT_004b1924 + 1;
+      return;
+    }
+    DAT_004b1d00 = 0;
+    DAT_004b1924 = 0;
+    if (((DAT_007c95bc <= iVar4) &&
+        (((DAT_007c95bc < iVar4 || (DAT_007c95b8 < uVar2)) && (DAT_0045f2a4 != 0)))) &&
+       ((DAT_007c95dc <= iVar3 &&
+        ((puVar7 = &stack0xffffffe4, DAT_007c95dc < iVar3 ||
+         (puVar7 = &stack0xffffffe4, DAT_007c95d8 < uVar1)))))) {
+      while( true ) {
+        do {
+          puVar5 = puVar7 + -4;
+          *(uint **)(puVar7 + -4) = &DAT_007c95d8;
+          *(undefined4 *)(puVar7 + -8) = 0x406fb8;
+          QueryPerformanceCounter(*(LARGE_INTEGER **)(puVar7 + -4));
+          puVar7 = puVar7 + -4;
+        } while (DAT_007c95dc < iVar3);
+        if (iVar3 < DAT_007c95dc) break;
+        puVar7 = puVar5;
+        if (uVar1 <= DAT_007c95d8) {
+          return;
+        }
+      }
+    }
+  }
+  else {
+    DAT_004b1d00 = 0;
+    DAT_004b1924 = 0;
+    if (((DAT_007c95bc <= iVar4) &&
+        ((((DAT_007c95bc < iVar4 || (DAT_007c95b8 < uVar2)) && (DAT_0045f2a4 != 0)) &&
+         (DAT_007c95dc <= iVar3)))) &&
+       ((puVar7 = &stack0xffffffe4, DAT_007c95dc < iVar3 ||
+        (puVar7 = &stack0xffffffe4, DAT_007c95d8 < uVar1)))) {
+      while( true ) {
+        do {
+          puVar6 = puVar7 + -4;
+          *(uint **)(puVar7 + -4) = &DAT_007c95d8;
+          *(undefined4 *)(puVar7 + -8) = 0x407028;
+          QueryPerformanceCounter(*(LARGE_INTEGER **)(puVar7 + -4));
+          puVar7 = puVar7 + -4;
+        } while (DAT_007c95dc < iVar3);
+        if (iVar3 < DAT_007c95dc) break;
+        puVar7 = puVar6;
+        if (uVar1 <= DAT_007c95d8) {
+          return;
+        }
+      }
+    }
+  }
+  return;
+}
+
