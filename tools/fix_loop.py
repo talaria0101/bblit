@@ -18,9 +18,11 @@ Pipeline per run:
        E. float assigned to a data_u32* slot   -> (void *)(uintptr_t)flt_bitsf((float)(rhs))
        F. arity mismatch on a call             -> ((long (*)())FUN)(args)
   5. loop until no fix applies; print per-class census of what remains
+  6. splice hand-ported function bodies from tools/patches/*.c
 
 Generated files only: bblit_game.c / bblit_game.h.  Hand-fixes belong in
-triage.txt follow-up, not here.
+tools/patches/ (whole functions) or in the HAND_FIXES table below (sites),
+never in the generated file itself.
 """
 import re, subprocess, sys, collections
 
@@ -602,6 +604,42 @@ def join_statements(lines):
 # hand fixes for sites the mechanical passes cannot type-resolve.  Each entry
 # is applied verbatim to the freshly generated text on every run.
 HAND_FIXES = [
+    # sysinfo_cpu_detect (0x42a0d0), the CPU vendor check.  Same LP64 frame
+    # slot defect as the disc scan (see tools/patches/find_cd_drive.c):
+    #
+    #   *(undefined **)(puVar12 + -2) = (undefined *)PTR_s_CyrixInstead_...;
+    #   *(undefined **)(puVar12 + -6) = (undefined *)&DAT_004b3fe0;
+    #   pcVar8 = _strstr(*(char **)(puVar12 + -6), *(char **)(puVar12 + -2));
+    #
+    # The second store is 8 bytes wide and covers -6..+1, so it overwrites the
+    # low 4 bytes of the pointer just stored at -2.  In the original i386 code
+    # both slots were 4 bytes, so no overlap.  Measured: SIGSEGV with
+    # si_addr=0 inside strspn/strstr, reached from winmain -> sysinfo_dump ->
+    # sysinfo_cpu_detect once the disc check passes.
+    #
+    # The needle is addressed directly instead of through
+    # PTR_s_CyrixInstead_004ac310 because that slot reads back NULL:
+    # bblit_port_init widens every pointer slot in the image from 4 to 8
+    # bytes, and the image packs them at 4-byte stride, so widening the
+    # neighbour at 0x4ac30c zeroes 0x4ac310 (measured: 0x4ac310 read 0 while
+    # the blob word holds 0x004ac318).  The string itself lives at 0x4ac318
+    # ("CyrixInstead", 13 bytes, per tools/databytes.csv), so that address is
+    # used directly.  The widening overlap is a separate, structural problem:
+    # two slots 4 bytes apart cannot both be 8 bytes wide in place.
+    ("""    *(undefined **)((long)(uintptr_t)puVar12 + -2) = (undefined *)(PTR_s_CyrixInstead_004ac310);
+    *(undefined **)((long)(uintptr_t)puVar12 + -6) = (undefined *)(&DAT_004b3fe0);
+    ((ushort *)((long)(uintptr_t)puVar12 + -10))[0] = 0xa42e;
+    ((ushort *)((long)(uintptr_t)puVar12 + -10))[1] = 0x42;
+    pcVar8 = _strstr(*(char **)((long)(uintptr_t)puVar12 + -6),*(char **)((long)(uintptr_t)puVar12 + -2));""",
+     """    pcVar8 = _strstr((const char *)(uintptr_t)&DAT_004b3fe0,
+                      (const char *)(uintptr_t)PTR_s_CyrixInstead_004ac310);"""),
+    # second step of the same fix, applied to files that already carry the
+    # first one: PTR_s_CyrixInstead_004ac310 is itself a widened slot whose
+    # value the widening loop destroys (see the note above), so name the
+    # needle by the image address the string actually occupies.
+    ("""    pcVar8 = _strstr((const char *)(uintptr_t)&DAT_004b3fe0,(const char *)(uintptr_t)PTR_s_CyrixInstead_004ac310);""",
+     """    pcVar8 = _strstr((const char *)(uintptr_t)&DAT_004b3fe0,
+                      (const char *)0x004ac318ul);"""),
     # DAT_009ca724 is a 64-bit module handle (dlopen result); float sites
     # read it as fild/qword - cast through uintptr_t
     ("(float)DAT_009ca724", "(float)(uintptr_t)DAT_009ca724"),
@@ -843,6 +881,52 @@ def lp64_ptr_arith_pass(lines):
     return out, n
 
 
+def apply_hand_ports(text):
+    """Replace whole function bodies from tools/patches/<name>.c.
+
+    A hand port is kept as a file rather than as a HAND_FIXES entry because
+    these bodies are hundreds of lines and each one carries a header comment
+    explaining why the generated form cannot work on LP64.  Without this the
+    committed linux/bblit_game.c is NOT reproducible from the pipeline: a
+    fresh decomp2linux.py + fix_loop.py run silently drops every one of them.
+
+    Idempotent: a body already carrying the patch marker is left alone.
+    """
+    import os
+    pdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'patches')
+    if not os.path.isdir(pdir):
+        return text, 0
+    n = 0
+    for fname in sorted(os.listdir(pdir)):
+        if not fname.endswith('.c'):
+            continue
+        name = fname[:-2]
+        raw = open(os.path.join(pdir, fname)).read().rstrip('\n')
+        # the target address comes from the banner, before it is stripped
+        am = re.search(r'@ ([0-9a-fA-F]{8})', raw.split('\n', 1)[0])
+        if not am:
+            print(f'  warn: tools/patches/{fname} has no "@ addr" banner, skipped')
+            continue
+        # drop the patch file's own banner: the function's decompile header
+        # is re-emitted by the splice target
+        body = re.sub(r'\A/\* [^*]*@ [0-9a-fA-F]{8} -- hand-port.*?\*/\n',
+                      '', raw, flags=re.S)
+        pat = re.compile(
+            r'(?m)^(// ===== \S+ @ ([0-9a-fA-F]{8}) =====\n)(.*?)(?=^// ===== |\Z)',
+            re.S)
+        blocks = list(pat.finditer(text))
+        m = next((b for b in blocks if b.group(2) == am.group(1)), None)
+        if not m:
+            print(f'  warn: no // ===== ... @ {am.group(1)} ===== block to splice '
+                  f'for tools/patches/{fname}')
+            continue
+        if body.split('\n', 1)[-1] in m.group(3):
+            continue                      # already applied
+        text = text[:m.start(3)] + body.lstrip('\n') + '\n' + text[m.end(3):]
+        n += 1
+    return text, n
+
+
 def oneshot(lines):
     lines, n_join = join_statements(lines)
     n = n_join
@@ -860,6 +944,9 @@ def oneshot(lines):
             text = text.replace(old, new)
     lines = text.split('\n')
     n += nfix
+    text, n_port = apply_hand_ports(text)
+    lines = text.split('\n')
+    n += n_port
     # &stackXXXXXX in assignments/views: port needs an integer-roundtrip so the
     # void* slot lvalue accepts it (gcc14 rejects implicit conversions)
     for i, l in enumerate(lines):

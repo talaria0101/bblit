@@ -42618,7 +42618,7 @@ static const struct { unsigned from; void *to; } bblit_thunks[] = {
 { 0x00453060, (void *)&FUN_00453060 },
 { 0x004530b0, (void *)&FUN_004530b0 },
 { 0x00453300, (void *)&FUN_00453300 },
-{ 0x00453400, (void *)&FUN_00453400 },
+{ 0x00453400, (void *)&game_vfprintf_core },
 { 0x00453d90, (void *)&FUN_00453d90 },
 { 0x00453de0, (void *)&FUN_00453de0 },
 { 0x00453e20, (void *)&FUN_00453e20 },

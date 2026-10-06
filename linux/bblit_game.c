@@ -3219,8 +3219,7 @@ long FUN_004056c0(int param_1,uint param_2) {
   char local_104 [260];
   
   bVar8 = 0;
-  { HANDLE h = CreateFileA((char *)(uintptr_t)param_1, GENERIC_READ, FILE_SHARE_READ, 0,
-                           OPEN_EXISTING, 0, 0);
+  { HANDLE h = CreateFileA((char *)(uintptr_t)param_1, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     iVar2 = (h == INVALID_HANDLE_VALUE) ? -1 : (CloseHandle(h), 0); }
   if ((iVar2 == -1) && (DAT_004b1928 != '\0')) {
     uVar3 = 0xffffffff;
@@ -3280,8 +3279,7 @@ long FUN_004056c0(int param_1,uint param_2) {
       pcVar6 = pcVar6 + (long)(int)((uint)bVar8 * -2 + 1);
     }
     iVar2 = -1;
-    { HANDLE h = CreateFileA(local_104, GENERIC_READ, FILE_SHARE_READ, 0,
-                             OPEN_EXISTING, 0, 0);
+    { HANDLE h = CreateFileA(local_104, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
       if (h != INVALID_HANDLE_VALUE) { CloseHandle(h); iVar2 = 0; } }
   }
   return iVar2;
@@ -3382,121 +3380,140 @@ void FUN_00405840(undefined4 param_1) {
 }
 
 // ===== find_cd_drive @ 00405850 =====
+/* cd_scan_once -- one pass of the disc check, shared by winmain's two
+ * passes and by find_cd_drive: walk drive letters from STR_CD_DRIVE_ROOT to
+ * 'z', keep the ones the shim reports as DRIVE_CDROM (5) whose volume
+ * label is BBLIT, and publish the match in DAT_004b1928.  Returns 1 on
+ * match, 0 if the walk finished with nothing.
+ *
+ * Hand ported.  See the header of tools/patches/find_cd_drive.c for the
+ * full reason; the short version is that Ghidra routes every outgoing
+ * argument of GetDriveTypeA/GetVolumeInformationA through a 4-byte i386
+ * frame slot, and the generated LP64 code writes those slots 8 bytes wide,
+ * so consecutive arguments overwrite each other.  Measured effect before
+ * this fix: vlen arrived as 32766 instead of 0x104 and the BBLIT needle as
+ * a stack address, so the comparison never matched. */
+int cd_scan_once(void)
+{
+  char root[8];
+  char label[0x104];
+  char fsbuf[0x104];
+  DWORD serial;
+  DWORD maxlen;
+  DWORD flags;
+  char c;
+
+  for (c = (char)STR_CD_DRIVE_ROOT; c <= 'z'; c = c + '\x01') {
+    root[0] = c;
+    root[1] = ':';
+    root[2] = '\\';
+    root[3] = '\0';
+    if (GetDriveTypeA(root) != 5) {
+      continue;
+    }
+    serial = 0;
+    flags = 0;
+    maxlen = 0x104;
+    label[0] = '\0';
+    fsbuf[0] = '\0';
+    if (!GetVolumeInformationA(root, label, 0x104, &serial, &maxlen, &flags,
+                              fsbuf, 0x104)) {
+      continue;
+    }
+    if (__strcmpi(label, STR_CD_VOLUME_LABEL) != 0) {
+      continue;
+    }
+    DAT_004b1928 = c;
+    _DAT_004b1929 = (data_u32 *)(uintptr_t)(STR_CD_DATAS_DIR);
+    _DAT_004b192d = (data_u32 *)(uintptr_t)(DAT_0045f358);
+    DAT_004b1931 = (data_u32 *)(uintptr_t)(DAT_0045f35c);
+    return 1;
+  }
+  return 0;
+}
+
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 undefined4 find_cd_drive(void) {
-  void *stack0xfffffdd4;
-  char cVar1;
+  char root[8];
+  char label[0x104];
+  char fsbuf[0x104];
+  DWORD serial;
+  DWORD maxlen;
+  DWORD flags;
   UINT UVar2;
   BOOL BVar3;
   int iVar4;
   undefined4 uVar5;
-  undefined1 *puVar6;
-  undefined1 *puVar7;
-  undefined1 *puVar8;
-  char local_20c;
-  char pad354f[260], pad14cf[260];
-  char *find_cd_frame = pad14cf + 0x100; /* stack anchor replacing stack0xfffffdd4 */
-  
-  puVar6 = (void *)(char *)find_cd_frame;
-  puVar8 = (void *)(char *)find_cd_frame;
+  char c;
+
   uVar5 = 0;
   SetErrorMode(1);
-  local_20c = (char)STR_CD_DRIVE_ROOT;
-  if ('z' < local_20c) {
-LAB_0040592e:
-    *(undefined4 *)(puVar8 + -4) = *(undefined4 *)(puVar8 + 0x10);
-    *(undefined4 *)(puVar8 + -8) = 0x405935;
-    SetErrorMode(*(UINT *)(puVar8 + -4));
+  c = (char)STR_CD_DRIVE_ROOT;
+  if ('z' < c) {
+    SetErrorMode(1);
     return uVar5;
   }
   do {
-    *(undefined1 **)(puVar6 + -4) = puVar6 + 0x20;
-    *(undefined4 *)(puVar6 + -8) = 0x405892;
-    UVar2 = GetDriveTypeA(*(LPCSTR *)(puVar6 + -4));
-    puVar7 = puVar6 + -4;
+    root[0] = c;
+    root[1] = ':';
+    root[2] = '\\';
+    root[3] = '\0';
+    UVar2 = GetDriveTypeA(root);
     if (UVar2 == 5) {
-      *(undefined4 *)(puVar6 + -8) = 0;
-      *(undefined4 *)(puVar6 + -0xc) = 0;
-      *(undefined1 **)(puVar6 + -0x10) = puVar6 + 0x18;
-      *(undefined1 **)(puVar6 + -0x14) = puVar6 + 0x10;
-      *(undefined1 **)(puVar6 + -0x18) = puVar6 + 0x14;
-      *(undefined4 *)(puVar6 + -0x1c) = 0x104;
-      *(undefined1 **)(puVar6 + -0x20) = puVar6 + 0x120;
-      puVar8 = puVar6 + -0x24;
-      *(undefined1 **)(puVar6 + -0x24) = puVar6 + 0x1c;
-      *(undefined4 *)(puVar6 + -0x28) = 0x4058be;
-      BVar3 = GetVolumeInformationA (*(LPCSTR *)(puVar6 + -0x24),pad354f, *(DWORD *)(puVar6 + -0x1c),*(LPDWORD *)(puVar6 + -0x18), *(LPDWORD *)(puVar6 + -0x14),*(LPDWORD *)(puVar6 + -0x10), (LPSTR)pad14cf,*(DWORD *)(puVar6 + -8));
-      puVar7 = puVar6 + -0x24;
+      serial = 0;
+      flags = 0;
+      maxlen = 0x104;
+      label[0] = '\0';
+      fsbuf[0] = '\0';
+      BVar3 = GetVolumeInformationA(root, label, 0x104, &serial, &maxlen,
+                                    &flags, fsbuf, 0x104);
       if (BVar3 != 0) {
-        *(char **)(puVar6 + -0x28) = STR_CD_VOLUME_LABEL;
-        *(undefined1 **)(puVar6 + -0x2c) = puVar6 + 0x100;
-        *(undefined4 *)(puVar6 + -0x30) = 0x4058d4;
-        iVar4 = __strcmpi(pad354f,*(char **)(puVar6 + -0x28));
-        puVar7 = puVar6 + -0x24;
+        iVar4 = __strcmpi(label, STR_CD_VOLUME_LABEL);
         if (iVar4 == 0) {
-          DAT_004b1928 = puVar6[-4];
+          DAT_004b1928 = c;
           _DAT_004b1929 = (data_u32 *)(uintptr_t)(STR_CD_DATAS_DIR);
           _DAT_004b192d = (data_u32 *)(uintptr_t)(DAT_0045f358);
           DAT_004b1931 = (data_u32 *)(uintptr_t)(DAT_0045f35c);
           uVar5 = 1;
-          goto LAB_0040592e;
+          SetErrorMode(1);
+          return uVar5;
         }
       }
     }
-    cVar1 = puVar7[0x20];
-    puVar7[0x20] = cVar1 + '\x01';
-    puVar6 = puVar7;
-    if ('z' < (char)(cVar1 + '\x01')) {
-      *(undefined4 *)(puVar7 + -4) = *(undefined4 *)(puVar7 + 0x10);
-      *(undefined4 *)(puVar7 + -8) = 0x4058f0;
-      SetErrorMode(*(UINT *)(puVar7 + -4));
+    c = c + '\x01';
+    if ('z' < c) {
+      SetErrorMode(1);
       return 0;
     }
   } while( true );
 }
-
 // ===== winmain @ 00405950 =====
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 undefined4 winmain(HINSTANCE param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4) {
-  void *stack0xfffffc3c;
-  char *winmain_frame; /* real address of stack0xfffffc3c, set up below */
+  char *winmain_frame; /* stable 4-byte frame base; see the note below */
   char cVar1;
   bool bVar2;
   undefined4 uVar3;
-  BYTE BVar4;
   HWND pHVar5;
   BOOL BVar6;
   LSTATUS LVar7;
   UINT UVar8;
-  UINT UVar9;
   int iVar10;
   uint uVar11;
   uint uVar12;
-  undefined1 *puVar13;
   undefined1 *puVar14;
   undefined1 *puVar15;
   undefined1 *puVar16;
-  char *pcVar17;
   undefined4 *puVar18;
+  char *pcVar17;
   char *pcVar19;
   char *pcVar20;
   byte bVar21;
-  undefined1 local_354 [260];
   CHAR local_250 [258];
   char acStack_14e [2];
   undefined1 local_14c [260];
-  /* the generator's 4-byte frame slots leave the high pointer halves
-   * unwritten when these buffers are passed by address to the shim
-   * (observed: GetVolumeInformationA got vol=0x7ffc00007ffc); pin the
-   * pointers on the stack in frame order instead */
-  char pad354[260], pad250[258], pad14c[260];
-  /* FUN_00405950 passes local_354/local_14c to WinAPI by address; the 4-byte
-   * frame-slot model leaves their high pointer halves unwritten, so pin the
-   * pointers (observed: GetVolumeInformationA saw 0x7ffc00007ffc). */
-  unsigned long long pad_354_hi = 0, pad_14c_hi = 0, pad_250_hi = 0;
-  unsigned long long pad_48_hi = 0, pad_2c_hi = 0, pad_24_hi = 0;
   undefined1 local_48 [4];
   int local_44;
   undefined1 local_2c [4];
@@ -3505,17 +3522,15 @@ undefined4 winmain(HINSTANCE param_1,undefined4 param_2,undefined4 param_3,undef
   DWORD local_10;
   DWORD local_c;
   HKEY local_8;
-  
+  static char winmain_slots[64];
+
   bVar21 = 0;
-  /* winmain_frame was derived as local_250-0x102, but gcc lays the locals
-   * out differently: the outgoing-slot mirror target computed from it is
-   * inside the register-save area at rsp+0x20, and the decompiled strlen
-   * idiom's folded stores clobber it mid-loop (observed: SIGSEGV
-   * movl $0x405c75,-0x8(%rbx) with the mirror inside the save area, and
-   * a-then-{-then-a root letters).  The mirror only needs a stable, private
-   * 260-byte buffer whose address survives the whole function. */
-  static char root_mirror[260];
-  winmain_frame = root_mirror - 0x102;
+  /* The decompile addresses outgoing call arguments as offsets from the
+   * frame base (stack0xfffffc3c).  On LP64 those offsets land outside any
+   * object the compiler laid out, so the port gives them a private arena:
+   * winmain_slots is 64 bytes and every slot access below stays within
+   * [-0x30, 0).  The arena must outlive the function, hence static. */
+  winmain_frame = winmain_slots + 0x30;
   LoadStringA(param_1,*(UINT *)(PTR_DAT_0045f344 + 8),local_250,0x104);
   LoadStringA((void *)(uintptr_t)(DAT_004b1ce8),*(UINT *)(PTR_DAT_0045f344 + 4),local_14c,0x104);
   pHVar5 = FindWindowA(STR_WINDOW_CLASS,local_14c);
@@ -3650,154 +3665,32 @@ undefined4 winmain(HINSTANCE param_1,undefined4 param_2,undefined4 param_3,undef
   RegCloseKey(local_8);
   bVar2 = false;
   UVar8 = SetErrorMode(1);
-  DATAPART(local_14c,0,4) = STR_CD_DRIVE_ROOT;
-  uVar3 = DATAPART(local_14c,0,4);
-  local_14c[0] = (BYTE)STR_CD_DRIVE_ROOT;
+  /* Disc check, first pass.  Hand ported: see the header comment of
+   * tools/patches/find_cd_drive.c for why the decompiled frame-slot form
+   * cannot be used.  The 8-byte pointer store to slot -0x2c overwrote the
+   * low half of the 4-byte needle stored at -0x28, so __strcmpi compared
+   * the volume label against a stack address and never matched, which is
+   * what kept the binary in the retry dialog until the frame corruption
+   * jumped to RIP=0. */
+  bVar2 = cd_scan_once() != 0;
   puVar15 = (void *)(char *)winmain_frame;
-  BVar4 = local_14c[0];
-  /* root buffer passed by address below; mirror it into the pinned call
-   * frame so the outgoing pointer is canonical (4-byte slot model leaves
-   * the high half of stack-slot pointers unwritten) */
-  snprintf((char *)(uintptr_t)winmain_frame + 0x102, 260, "%c:\\",
-           (char)local_14c[0]);
-  while (DATAPART(local_14c,0,4) = uVar3, puVar16 = puVar15, (char)BVar4 < '{') {
-    *(undefined1 **)(puVar15 + -4) = (undefined1 *)((char *)(uintptr_t)winmain_frame + 0x102);
-    *(undefined4 *)(puVar15 + -8) = 0x405b92;
-    UVar9 = GetDriveTypeA(*(LPCSTR *)(puVar15 + -4));
-    puVar14 = puVar15 + -4;
-    if (UVar9 == 5) {
-      *(undefined4 *)(puVar15 + -8) = 0;
-      *(undefined4 *)(puVar15 + -0xc) = 0;
-      *(DWORD **)(puVar15 + -0x10) = &local_10;
-      *(DWORD **)(puVar15 + -0x14) = &local_c;
-      *(HKEY **)(puVar15 + -0x18) = &local_8;
-      *(undefined4 *)(puVar15 + -0x1c) = 0x104;
-      *(undefined1 **)(puVar15 + -0x20) = local_354;
-      puVar16 = puVar15 + -0x24;
-      *(undefined1 **)(puVar15 + -0x24) = local_14c;
-      *(undefined4 *)(puVar15 + -0x28) = 0x405bc0;
-      BVar6 = GetVolumeInformationA (*(LPCSTR *)(puVar15 + -0x24),pad354, *(DWORD *)(puVar15 + -0x1c),*(LPDWORD *)(puVar15 + -0x18), *(LPDWORD *)(puVar15 + -0x14),*(LPDWORD *)(puVar15 + -0x10), (LPSTR)pad14c,*(DWORD *)(puVar15 + -8));
-      puVar14 = puVar15 + -0x24;
-      if (BVar6 != 0) {
-        *(char **)(puVar15 + -0x28) = STR_CD_VOLUME_LABEL;
-        *(undefined1 **)(puVar15 + -0x2c) = local_354;
-        *(undefined4 *)(puVar15 + -0x30) = 0x405bd5;
-        iVar10 = __strcmpi(pad354,*(char **)(puVar15 + -0x28));
-        puVar14 = puVar15 + -0x24;
-        if (iVar10 == 0) {
-          DAT_004b1928 = local_14c[0];
-          _DAT_004b1929 = (data_u32 *)(uintptr_t)(STR_CD_DATAS_DIR);
-          _DAT_004b192d = (data_u32 *)(uintptr_t)(DAT_0045f358);
-          DAT_004b1931 = (data_u32 *)(uintptr_t)(DAT_0045f35c);
-          bVar2 = true;
-          break;
-        }
-      }
-    }
-    BVar4 = local_14c[0] + '\x01';
-    local_14c[0] = BVar4;
-    uVar3 = DATAPART(local_14c,0,4);
-    puVar15 = puVar14;
-  }
-  puVar13 = puVar16 + -4;
-  puVar15 = puVar16 + -4;
+  puVar16 = (undefined1 *)winmain_frame;
   *(UINT *)(puVar16 + -4) = UVar8;
   *(undefined4 *)(puVar16 + -8) = 0x405c26;
   SetErrorMode(*(UINT *)(puVar16 + -4));
   if (!bVar2) {
-    /* the mirror lives at winmain_frame+0x102 from here on; every restart
-     * of the drive loop re-writes it explicitly so the folded loop-back
-     * copy of the decompiler idiom cannot leave it stale (observed: 'a:\'
-     * on entry, then '{:\' forever) */
+    /* No BBLIT disc found.  The decompile shows the retry dialog followed by
+     * a second, identical copy of the drive scan; both are hand ported for
+     * the same frame-slot reason.  The shim's dialog cannot be answered
+     * "retry", so it reports IDCANCEL and we exit as if the user pressed
+     * Cancel rather than looping (measured: the unbounded loop ended in
+     * SIGSEGV at RIP=0). */
     do {
-      snprintf((char *)(uintptr_t)winmain_frame + 0x102, 260, "%c:\\",
-               (char)STR_CD_DRIVE_ROOT);
-      *(CHAR **)(puVar13 + -4) = local_250;
-      *(undefined4 *)(puVar13 + -8) = 0x405c3a;
       iVar10 = (int)(uintptr_t)error_message_box((long)(uintptr_t)local_250);
-      if (iVar10 == 2) return 0;   /* MessageBoxA shim reports IDCANCEL(2):
-                                      the shim dialog can never be answered
-                                      "retry", so bail out like the user
-                                      pressing Cancel instead of looping */
-      *(undefined4 *)(puVar13 + -4) = 1;
-      bVar2 = false;
-      *(undefined4 *)(puVar13 + -8) = 0x405c4c;
-      UVar8 = SetErrorMode(*(UINT *)(puVar13 + -4));
-      DATAPART(local_14c,0,4) = STR_CD_DRIVE_ROOT;
-      uVar3 = DATAPART(local_14c,0,4);
-      local_14c[0] = (BYTE)STR_CD_DRIVE_ROOT;
-      /* root buffer passed by address in this loop too (see scan above);
-       * mirror both the buffer AND the DATAPART dword: uVar3 is what the
-       * loop condition actually compares (observed: without this the mirror
-       * got 'a:\' right once, then uVar3 kept a stale first byte and the
-       * mirror showed '{:\' for every later drive) */
-      uVar3 = ((unsigned int)STR_CD_DRIVE_ROOT & ~0xffffU) | (unsigned int)(BYTE)STR_CD_DRIVE_ROOT;
-      /* Write the mirror EXPLICITLY: gcc folds the decompiled strlen/copy
-       * idiom into inline stores and then merges the loop-back into a copy
-       * from the stale local, which left the drive letter stale (observed:
-       * mirror showed 'a:\' then '{:\' forever).  snprintf cannot be
-       * folded away. */
-      puVar15 = puVar13 + -4;
-      BVar4 = local_14c[0];
-      while (DATAPART(local_14c,0,4) = uVar3, puVar16 = puVar15, (char)BVar4 < '{') {
-        /* mirror the root buffer explicitly each iteration: the walk starts
-         * at 'a' (local_14c[0] after the dialog reset) and the decompiled
-         * strlen/copy idiom gets folded away, which previously left the
-         * mirrored string stale at '{:\' */
-        snprintf((char *)(uintptr_t)winmain_frame + 0x102, 260, "%c:\\",
-                 (char)BVar4);
-        *(undefined1 **)(puVar15 + -4) = (undefined1 *)((char *)(uintptr_t)winmain_frame + 0x102);
-        *(undefined4 *)(puVar15 + -8) = 0x405c75;
-        UVar9 = GetDriveTypeA(*(LPCSTR *)(puVar15 + -4));
-        puVar14 = puVar15 + -4;
-        if (UVar9 == 5) {
-          *(undefined4 *)(puVar15 + -8) = 0;
-          *(undefined4 *)(puVar15 + -0xc) = 0;
-          *(DWORD **)(puVar15 + -0x10) = &local_10;
-          *(DWORD **)(puVar15 + -0x14) = &local_c;
-          *(HKEY **)(puVar15 + -0x18) = &local_8;
-          *(undefined4 *)(puVar15 + -0x1c) = 0x104;
-          *(undefined1 **)(puVar15 + -0x20) = local_354;
-          puVar16 = puVar15 + -0x24;
-          *(undefined1 **)(puVar15 + -0x24) = (undefined1 *)((char *)(uintptr_t)winmain_frame + 0x102);
-          *(undefined4 *)(puVar15 + -0x28) = 0x405ca3;
-          BVar6 = GetVolumeInformationA (*(LPCSTR *)(puVar15 + -0x24),pad354, *(DWORD *)(puVar15 + -0x1c),*(LPDWORD *)(puVar15 + -0x18), *(LPDWORD *)(puVar15 + -0x14),*(LPDWORD *)(puVar15 + -0x10), (LPSTR)pad14c,*(DWORD *)(puVar15 + -8));
-          puVar14 = puVar15 + -0x24;
-          if (BVar6 != 0) {
-            *(char **)(puVar15 + -0x28) = STR_CD_VOLUME_LABEL;
-            *(undefined1 **)(puVar15 + -0x2c) = (undefined1 *)pad354;
-            *(undefined4 *)(puVar15 + -0x30) = 0x405cb8;
-            iVar10 = __strcmpi(pad354,*(char **)(puVar15 + -0x28));
-            puVar14 = puVar15 + -0x24;
-            if (iVar10 == 0) {
-              DAT_004b1928 = local_14c[0];
-              _DAT_004b1929 = (data_u32 *)(uintptr_t)(STR_CD_DATAS_DIR);
-              _DAT_004b192d = (data_u32 *)(uintptr_t)(DAT_0045f358);
-              DAT_004b1931 = (data_u32 *)(uintptr_t)(DAT_0045f35c);
-              bVar2 = true;
-              break;
-            }
-          }
-        }
-        BVar4 = local_14c[0] + '\x01';
-        local_14c[0] = BVar4;
-        uVar3 = DATAPART(local_14c,0,4);
-        /* advance the mirrored root string in the pinned call frame by one
-         * drive letter; rewrite the whole 'X:\' so no folded store can leave
-         * it stale (observed: byte-only store was dropped by the merged
-         * loop-back copy) */
-        snprintf((char *)(uintptr_t)winmain_frame + 0x102, 260, "%c:\\", (char)BVar4);
-        puVar15 = puVar14;
-      }
-      puVar15 = puVar16 + -4;
-      puVar13 = puVar16 + -4;
-      *(UINT *)(puVar16 + -4) = UVar8;
-      *(undefined4 *)(puVar16 + -8) = 0x405d08;
-      SetErrorMode(*(UINT *)(puVar16 + -4));
+      if (iVar10 == 2) return 0;
+      UVar8 = SetErrorMode(1);
+      bVar2 = cd_scan_once() != 0;
     } while (!bVar2);
-    if (!bVar2) {
-      return 0;
-    }
   }
   *(undefined4 *)(puVar15 + -4) = 0x405d24;
   parse_command_line();
@@ -3818,14 +3711,14 @@ undefined4 winmain(HINSTANCE param_1,undefined4 param_2,undefined4 param_3,undef
       *(HINSTANCE *)(puVar15 + -8) = (HINSTANCE)(uintptr_t)(DAT_004b1ce8);
       *(undefined4 *)(puVar15 + -0xc) = 0x405d69;
       DAT_009ca838 = (uintptr_t)(pHVar5);
-      pHVar5 = (HWND)ogl_init();
+  pHVar5 = (HWND)ogl_init();
     }
     if (pHVar5 == (HWND)0x0) {
       *(undefined4 *)(puVar15 + -4) = 5;
       DAT_009ca824 = (uint)(299 < DAT_004b1de4);
       *(HINSTANCE *)(puVar15 + -8) = (HINSTANCE)(uintptr_t)(DAT_004b1ce8);
       *(undefined4 *)(puVar15 + -0xc) = 0x405d92;
-      pHVar5 = (HWND)ogl_init();
+  pHVar5 = (HWND)ogl_init();
       if (pHVar5 == (HWND)0x0) goto LAB_004060fc;
     }
   }
@@ -4105,7 +3998,6 @@ LAB_004060b5:
   }
   goto LAB_00405db9;
 }
-
 // ===== FUN_00406190 @ 00406190 =====
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
@@ -18662,11 +18554,8 @@ LSTATUS sysinfo_cpu_detect(void) {
     _DAT_004b1de0 = 0;
   }
   if (4 < (int)DAT_004b3ff0) {
-    *(undefined **)((long)(uintptr_t)puVar12 + -2) = (undefined *)(PTR_s_CyrixInstead_004ac310);
-    *(undefined **)((long)(uintptr_t)puVar12 + -6) = (undefined *)(&DAT_004b3fe0);
-    ((ushort *)((long)(uintptr_t)puVar12 + -10))[0] = 0xa42e;
-    ((ushort *)((long)(uintptr_t)puVar12 + -10))[1] = 0x42;
-    pcVar8 = _strstr(*(char **)((long)(uintptr_t)puVar12 + -6),*(char **)((long)(uintptr_t)puVar12 + -2));
+    pcVar8 = _strstr((const char *)(uintptr_t)&DAT_004b3fe0,
+                      (const char *)(uintptr_t)PTR_s_CyrixInstead_004ac310);
     if ((pcVar8 == (char *)0x0) || (_DAT_004b1dd0 = 0, 4 < (int)DAT_004b3ff0)) {
       _DAT_004b1dd0 = (data_u32 *)(uintptr_t)(1);
     }
@@ -32388,7 +32277,7 @@ undefined4 FUN_00450420(undefined1 *param_1,undefined4 param_2) {
   local_20 = param_1;
   local_14 = 0x42;
   local_1c = 0x7fffffff;
-  uVar1 = ((long (*)())FUN_00453400)(&local_20,param_2,((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)&stack0x0000000c)))))))))))))))))));
+  uVar1 = ((long (*)())game_vfprintf_core)(&local_20,param_2,((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)&stack0x0000000c)))))))))))))))))));
   local_1c = local_1c + -1;
   if (-1 < local_1c) {
     *local_20 = 0;
@@ -32410,7 +32299,7 @@ undefined4 FUN_00450490(undefined1 *param_1,undefined4 param_2,undefined4 param_
   local_20 = param_1;
   local_14 = 0x42;
   local_1c = 0x7fffffff;
-  uVar1 = ((long (*)())FUN_00453400)(&local_20,param_2,param_3);
+  uVar1 = ((long (*)())game_vfprintf_core)(&local_20,param_2,param_3);
   local_1c = local_1c + -1;
   if (-1 < local_1c) {
     *local_20 = 0;
@@ -32448,8 +32337,7 @@ undefined4 FUN_00450500(int param_1) {
 }
 
 // ===== FUN_00450580 @ 00450580 =====
-/* VC6 vfprintf on the engine's FILE* (param_1): fmt in param_2, va_list
- * staged at stack0x0000000c. */
+/* VC6 vfprintf on the engine's FILE* (param_1): fmt in param_2, va_list * staged at stack0x0000000c. */
 undefined4 FUN_00450580(undefined4 param_1,undefined4 param_2) {
   void *stack0x0000000c;
   undefined4 uVar1;
@@ -32457,8 +32345,7 @@ undefined4 FUN_00450580(undefined4 param_1,undefined4 param_2) {
   
   uVar1 = FUN_00453f00((void *)(uintptr_t)(param_1));
   { va_list ap; *(void **)&ap = (void *)&stack0x0000000c;
-    vfprintf((FILE *)(void *)(uintptr_t)FUN_00453f00((void *)(uintptr_t)(param_1)),
-             (char *)param_2, ap); }
+    vfprintf((FILE *)(void *)(uintptr_t)FUN_00453f00((void *)(uintptr_t)(param_1)), (char *)param_2, ap); }
   FUN_00453fa0(uVar1,(void *)(uintptr_t)(param_1));
   return uVar2;
 }
@@ -32590,11 +32477,7 @@ undefined4 FUN_00450760(LPCSTR param_1) {
       if (((cVar1 == '\\') || (cVar1 == '/')) && (cVar1 == (char)((uint)lpBuffer >> 8))) {
         return 0;
       }
-      /* the original here calls the CharUpperA helper (FUN_00454480) on the
-       * just-read directory string; its zero-arg call site loses the arg in
-       * the decompilation, and passing the buffer address would run the
-       * DBCS/CharUpper path on a 32-bit-truncated char* -- skip it: getcwd
-       * output is already the canonical form this code wants */
+      /* the original here calls the CharUpperA helper (FUN_00454480) on the * just-read directory string; its zero-arg call site loses the arg in * the decompilation, and passing the buffer address would run the * DBCS/CharUpper path on a 32-bit-truncated char* -- skip it: getcwd * output is already the canonical form this code wants */
       BVar2 = SetEnvironmentVariableA(lpBuffer,"BBLIT");
       if (BVar2 != 0) {
         return 0;
@@ -33529,7 +33412,7 @@ undefined4 FUN_00451a50(undefined4 param_1) {
   undefined4 uVar2;
   
   uVar1 = FUN_00453f00(&DAT_004ae668);
-  uVar2 = ((long (*)())FUN_00453400)(&DAT_004ae668,param_1,((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)&stack0x00000008)))))))))))))))))));
+  uVar2 = ((long (*)())game_vfprintf_core)(&DAT_004ae668,param_1,((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)((void *)(uintptr_t)&stack0x00000008)))))))))))))))))));
   FUN_00453fa0(uVar1,&DAT_004ae668);
   return uVar2;
 }
@@ -34890,9 +34773,8 @@ undefined4 FUN_00453300(int *param_1) {
   return uVar3;
 }
 
-// ===== FUN_00453400 @ 00453400 =====
-undefined4 FUN_00453400(undefined4 param_1,char *param_2) {
-  void *stack0xfffffda4;
+// ===== game_vfprintf_core @ 00453400 =====
+undefined4 game_vfprintf_core(undefined4 param_1,char *param_2) {
   char cVar1;
   undefined1 uVar2;
   short sVar3;
@@ -34914,13 +34796,13 @@ undefined4 FUN_00453400(undefined4 param_1,char *param_2) {
   byte bVar19;
   ulonglong uVar20;
   longlong lVar21;
-  int aiStack_2b4 [10];
-  uint auStack_28c [3];
-  int iStack_280;
-  char acStack_27a [2];
-  int aiStack_278 [5];
-  int local_264 [2];
-  char *f00453400_frame = (char *)aiStack_2b4 - 8; /* real address of stack0xfffffda4 */
+  /* The decompile's outgoing-argument slots run from -0x24 to +0x264 around
+   * the frame anchor.  The generated code anchored that on `aiStack_2b4 - 8`,
+   * a 40-byte array, so every slot past +0x20 addressed memory outside the
+   * object.  vf_frame is 0x400 bytes with the anchor 0x40 in, which covers
+   * [-0x40, +0x3c0) and so every slot the function uses. */
+  static unsigned char vf_frame[0x400];
+  char *f00453400_frame = (char *)vf_frame + 0x40; /* frame anchor */
   uint local_24c [3];
   char local_240 [12];
   int local_234;
@@ -35420,7 +35302,6 @@ LAB_00453b5f:
   }
   return *(undefined4 *)(puVar15 + 0x1c);
 }
-
 // ===== FUN_00453d90 @ 00453d90 =====
 void FUN_00453d90(uint param_1,int *param_2,int *param_3) {
   int iVar1;
@@ -38993,8 +38874,7 @@ int FUN_00458400(LPSTR param_1,ushort param_2) {
 }
 
 // ===== FUN_00458480 @ 00458480 =====
-/* VC6 _lopen/_lcreate family: returns the handle in EAX; the decompiler
- * dropped it.  0x40 is OF_SHARE_DENY_NONE. */
+/* VC6 _lopen/_lcreate family: returns the handle in EAX; the decompiler * dropped it.  0x40 is OF_SHARE_DENY_NONE. */
 long FUN_00458480(undefined4 param_1,undefined4 param_2,undefined4 param_3) {
   return (long)FUN_004584a0((void *)(uintptr_t)(param_1),param_2,0x40,param_3);
 }

@@ -283,8 +283,18 @@ def main():
         if renames:
             # apply longest-first to avoid prefix collisions
             for old, new in sorted(renames.items(), key=lambda kv: -len(kv[0])):
-                if old.startswith(('FUN_', 'DAT_', 'PTR_')) or re.match(r'^[0-9a-fA-F]{8}$', old):
+                if old.startswith(('FUN_', 'DAT_', 'PTR_')):
                     t = re.sub(r'\b' + re.escape(old) + r'\b', new, t)
+                elif re.match(r'^[0-9a-fA-F]{8}$', old):
+                    # address-keyed entry: Ghidra spells the same object
+                    # FUN_<addr> / DAT_<addr> / PTR_<addr> / LAB_<addr>, and
+                    # `\b<addr>\b` cannot match inside those because `_` is a
+                    # word character, so the prefixed spellings need their
+                    # own patterns.  Without this the definition gets renamed
+                    # but every call site keeps the FUN_ name, which shows up
+                    # as "implicit declaration" in the regenerated file.
+                    t = re.sub(r'\b(?:FUN_|DAT_|PTR_|LAB_)?' + re.escape(old) + r'\b',
+                               new, t)
 
         game_parts.append(f"// ===== {c['newname']} @ {c['addr']} =====\n" + t.strip() + '\n')
 
@@ -450,8 +460,8 @@ def main():
 
     with open(os.path.join(args.outdir, 'bblit_game.c'), 'w') as f:
         f.write('/* bblit_game.c -- generated from bugs_decompiled.c by tools/decomp2linux.py.\n'
-                ' * Do not edit by hand; edit the generator or the rename map.\n */\n'
-                '#include "bblit_game.h"\n\n')
+                ' * Do not edit by hand; edit the generator or the rename map.\n'
+                ' */\n#include "bblit_game.h"\n\n')
         f.write(full)
 
     with open(os.path.join(args.outdir, 'bblit_game.h'), 'w') as f:

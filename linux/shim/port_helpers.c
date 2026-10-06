@@ -57,8 +57,35 @@ long CARRY4(unsigned long a, unsigned long b) {
 unsigned long long rdtsc(void) {
     return __builtin_ia32_rdtsc();
 }
-unsigned char in(unsigned short port) { (void)port; return 0; }
-void out(unsigned short port, unsigned char val) { (void)port; (void)val; }
+/* sysinfo_cpu_detect (0x42a0d0) measures CPU speed by reading the timestamp
+ * counter through port I/O: `out 0x43, 0xb8` latches the TSC, then two
+ * `in 0x42` reads return the low and high halves.  Returning 0 for every
+ * `in` makes the calibration loop's divisor zero and the following
+ * `0x1fffe / uVar16` divide faults (measured: SIGFPE, RDX=0, RIP in
+ * sysinfo_cpu_detect).  Emulate the latch so the loop measures a real
+ * interval; the resulting MHz figure is this host's, not the 1999 target's.
+ * STUB-DIVERGENCE: real hardware latches on 0x43 and returns on 0x42. */
+static unsigned short tsc_latch_lo, tsc_latch_hi;
+unsigned char in(unsigned short port)
+{
+    if (port == 0x42) {
+        unsigned short v = tsc_latch_lo;
+        tsc_latch_lo = tsc_latch_hi;
+        tsc_latch_hi = 0;
+        return (unsigned char)v;
+    }
+    return 0;
+}
+void out(unsigned short port, unsigned char val)
+{
+    if (port == 0x43) {
+        unsigned long long t = __builtin_ia32_rdtsc();
+        tsc_latch_lo = (unsigned short)t;
+        tsc_latch_hi = (unsigned short)(t >> 16);
+        return;
+    }
+    (void)val;
+}
 
 long double f2xm1(long double x) { return exp2l((double)x) - 1.0L; }
 long double fpatan(long double y, long double x) { return atan2l((double)y, (double)x); }

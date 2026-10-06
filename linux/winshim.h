@@ -8,6 +8,10 @@
 #include "ghidra_types.h"
 #include <stddef.h>
 #include <wchar.h>
+/* the ported game code calls these directly (game_sprintf and friends are
+ * renamed CRT-family entry points, not libc ones) */
+#include <stdio.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
